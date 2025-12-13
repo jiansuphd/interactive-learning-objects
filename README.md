@@ -1,69 +1,33 @@
-Interactive Learning Object (ILO) Library
+# Interactive Learning Object (ILO) Library
 
 A collection of HTML5, CSS, and JavaScript interactions designed for higher education courseware. This repository serves as a design system and component library for creating engaging digital learning experiences.
 
-📂 Project Structure
+## 📂 Project Structure
 
-/templates: Generic, reusable versions of interactions (Hotspots, Timelines, Labs). Use these as a base for new projects.
+This repository is organized to separate reusable templates from specific course implementations.
 
-/examples: Real-world implementations used in specific courses (DATA101, HBS513).
+- **`/templates`**: Generic, reusable versions of interactions. Use these as a starting point for new projects.
+    - **`/hotspot`**: Image-based exploration activities.
+    - **`/timeline`**: Interactive timelines for course mapping or history.
+    - **`/checklist`**: Interactive tools for student or faculty self-checks.
+    - **`/effects`**: Visual CSS effects like liquid animations.
 
-/css & /js: Shared core styling and logic files.
+- **`/examples`**: Real-world implementations used in specific courses.
+    - **`/data101`**: Interactions for Data Science 101 (Probability Labs, AI Sims, Journey Maps).
+    - **`/hbs513`**: Content for HBS513 (ITS Labs, Financial Engineering Lectures).
+    - **`/hbs514`**: Content for HBS514 (Ethics Labs, Interactive Scenarios).
 
-🚀 Getting Started
+- **`/assets`**: Shared resources.
+    - **`/css`**: Global styles (`shared.css`) and variables.
+    - **`/js`**: Common utility scripts (`utils.js`).
+    - **`/images`**: Shared graphical assets.
 
-Prerequisites
+## 🚀 Getting Started
 
+### Prerequisites
 You can run these files directly in any modern web browser. No server is required for the static versions.
 
-Installation
-
-Clone the repo:
-
-git clone [https://github.com/your-username/ilo-library.git](https://github.com/your-username/ilo-library.git)
-
-
-
-Open index.html in your browser to view the directory of interactions.
-
-🛠 Component Categories
-
-1. Visualizations
-
-Journey Maps: SVG and HTML based timelines for course mapping.
-
-Liquid Effects: CSS-heavy visual flourishes for engagement.
-
-2. Simulations
-
-Probability Lab: JS-driven logic for data science concepts.
-
-Ethics Lab: Branching scenario logic.
-
-3. Interactions
-
-Hotspots: Click-to-reveal interactions for image exploration.
-
-Lesson Player: A wrapper interface for sequential content.
-
-🔮 Future Roadmap
-
-$$$$
-
- Refactor CSS into SASS/SCSS modules.
-
-$$$$
-
- Convert HTML templates into React/Vue components.
-
-$$$$
-
- Create a JSON schema for easy content injection.
-
-$$$$
-
- Publish as an NPM package for easy import into LMS platforms.
-
-📄 License
-
-MIT
+### Installation
+1. Clone the repo:
+   ```bash
+   git clone [https://github.com/jiansuphd/interactive-learning-objects.git](https://github.com/jiansuphd/interactive-learning-objects.git)
