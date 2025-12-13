@@ -31,3 +31,36 @@ You can run these files directly in any modern web browser. No server is require
 1. Clone the repo:
    ```bash
    git clone [https://github.com/jiansuphd/interactive-learning-objects.git](https://github.com/jiansuphd/interactive-learning-objects.git)
+````
+
+2.  Open `index.html` in your browser. This file acts as a **gallery** launching point, allowing you to browse and access all templates and examples from a single interface.
+
+## 🛠 Component Categories
+
+### 1\. Visualizations
+
+  - **Journey Maps:** SVG and HTML based timelines for course mapping.
+  - **Liquid Effects:** CSS-heavy visual flourishes for engagement.
+
+### 2\. Simulations
+
+  - **Probability Lab:** JS-driven logic for data science concepts.
+  - **AI/ML Lab:** Interactive demonstrations of artificial intelligence principles.
+  - **Ethics Lab:** Branching scenario logic for decision-making exercises.
+
+### 3\. Interactions
+
+  - **Hotspots:** Click-to-reveal interactions for image exploration.
+  - **Lesson Player:** A wrapper interface for sequential content.
+  - **Interactive Checklists:** Tools for tracking progress or readiness.
+
+## 🔮 Future Roadmap
+
+  - [ ] Refactor CSS into SASS/SCSS modules.
+  - [ ] Convert HTML templates into React/Vue components.
+  - [ ] Create a JSON schema for easy content injection.
+  - [ ] Publish as an NPM package for easy import into LMS platforms.
+
+## 📄 License
+
+[MIT](https://choosealicense.com/licenses/mit/)
