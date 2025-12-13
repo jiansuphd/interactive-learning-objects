@@ -3,156 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ILO Design System</title>
+    <title>ILO Component Gallery (Jian Su, Ph.D.)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        :root {
-            --primary: #2563eb;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-        }
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f6f9;
+            color: #1f2937;
+            padding: 20px;
+        }
+        .gallery-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
         }
-        h1 { margin-bottom: 2rem; }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
+        h1 {
+            font-family: 'Roboto Slab', serif;
+            color: #1a56c0;
+            border-bottom: 3px solid #f59e0b;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        h3 {
+            font-family: 'Roboto Slab', serif;
+            color: #3b82f6;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            padding-left: 10px;
+            border-left: 4px solid #f59e0b;
         }
         .card {
-            background: var(--card-bg);
-            padding: 1.5rem;
+            background-color: white;
             border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            transition: transform 0.2s;
-            border: 1px solid #e2e8f0;
-            text-decoration: none;
-            color: inherit;
-            display: block;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
         }
         .card:hover {
-            transform: translateY(-2px);
-            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
         }
-        .tag {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.75rem;
+        .card-icon {
+            font-size: 1.5rem;
+            color: #f59e0b;
+            margin-right: 15px;
+            width: 30px;
+            text-align: center;
+        }
+        .card a {
             font-weight: 600;
-            background: #e0f2fe;
-            color: #0369a1;
-            margin-bottom: 0.5rem;
+            color: #1f2937;
+            text-decoration: none;
         }
-        .tag.sim { background: #fce7f3; color: #db2777; }
-        .tag.viz { background: #dcfce7; color: #166534; }
-        
-        h3 { margin: 0.5rem 0; }
-        p { color: #64748b; font-size: 0.9rem; }
-        
-        section { margin-bottom: 4rem; }
+        .card a:hover {
+            color: #1a56c0;
+            text-decoration: underline;
+        }
+        .card p {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
-    <h1>Interactive Learning Objects (ILO) Library</h1>
-    
-    <section>
-        <h2>Generic Templates & Visuals</h2>
-        <div class="grid">
-            <a href="ilos/liquid-effect.html" class="card">
-                <span class="tag viz">Visual FX</span>
-                <h3>Liquid Effect</h3>
-                <p>CSS-only fluid animation effect for background ambiance.</p>
-            </a>
-            <a href="ilos/chinese-cuisine-hotspot.html" class="card">
-                <span class="tag">Interaction</span>
-                <h3>Hotspot Activity</h3>
-                <p>Image-based exploration with modal popups.</p>
-            </a>
-             <a href="ilos/course-mapping.html" class="card">
-                <span class="tag viz">Visualization</span>
-                <h3>Course Mapping</h3>
-                <p>Interactive timeline or map for curriculum structure.</p>
-            </a>
-             <a href="ilos/interactive-pre-launch-checklist.html" class="card">
-                <span class="tag">Utility</span>
-                <h3>Pre-Launch Checklist</h3>
-                <p>Interactive checklist tool for course readiness.</p>
-            </a>
-        </div>
-    </section>
 
-    <section>
-        <h2>Course Archives (Examples)</h2>
-        <div class="grid">
-            <!-- DATA101 Examples -->
-            <a href="ilos/data101-m8-probability-lab.html" class="card">
-                <span class="tag sim">DATA101</span>
-                <h3>Probability Lab (M8)</h3>
-                <p>Interactive data simulation for Module 8.</p>
-            </a>
-            <a href="ilos/data101-m11-ai-ml-lab.html" class="card">
-                <span class="tag sim">DATA101</span>
-                <h3>AI & ML Lab (M11)</h3>
-                <p>Artificial Intelligence concepts simulation.</p>
-            </a>
-             <a href="ilos/data101-journey-map.html" class="card">
-                <span class="tag viz">DATA101</span>
-                <h3>Data Science Journey</h3>
-                <p>Course mapping visualization for the Data Science program.</p>
-            </a>
-            <a href="ilos/data101-m11-lesson-player.html" class="card">
-                <span class="tag">Lesson</span>
-                <h3>M11 Lesson Player</h3>
-                <p>Sequential content player for Module 11.</p>
-            </a>
-            <a href="ilos/data101-m11-hotspot-activity.html" class="card">
-                <span class="tag">Interaction</span>
-                <h3>M11 Hotspot Activity</h3>
-                <p>Specific hotspot interaction for Module 11.</p>
-            </a>
-            
-            <!-- HBS513 Examples -->
-            <a href="ilos/hbs513-w7-its-lab.html" class="card">
-                <span class="tag sim">HBS513</span>
-                <h3>ITS Lab System (W7)</h3>
-                <p>Week 7: Information Tech systems lab interaction.</p>
-            </a>
-             <a href="ilos/hbs513-w10-fe-lecture.html" class="card">
-                <span class="tag sim">HBS513</span>
-                <h3>FE Lecture (W10)</h3>
-                <p>Week 10: Financial Engineering lecture interactive elements.</p>
-            </a>
+<div class="gallery-container">
+    <h1 class="text-3xl">Interactive Learning Object (ILO) Gallery</h1>
+    <p class="text-lg text-gray-600">Browse and launch components used in course development, organized by category.</p>
 
-            <!-- HBS514 Examples -->
-             <a href="ilos/hbs514-m4-ethics-lab.html" class="card">
-                <span class="tag sim">HBS514</span>
-                <h3>Ethics Lab (M4)</h3>
-                <p>Module 4: Ethical decision making branching scenario.</p>
-            </a>
-             <a href="ilos/hbs514-m7-interactive-lab.html" class="card">
-                <span class="tag sim">HBS514</span>
-                <h3>Interactive Lab (M7)</h3>
-                <p>Module 7: Advanced interactive scenario.</p>
-            </a>
+    <!-- 1. COURSE ARCHIVES (MOVED UP) -->
+    <h3 class="text-xl">1. Course Archives (Specific Course Content)</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        
+        <div class="card">
+            <span class="card-icon"><i class="fas fa-chart-bar"></i></span>
+            <div>
+                <a href="hbs513-w7-its-lab.html">HBS513 - Interrupted Time Series (ITS) Lab</a>
+                <p>Quasi-Experimental Design Lab focusing on time series analysis.</p>
+            </div>
         </div>
-    </section>
+        <div class="card">
+            <span class="card-icon"><i class="fas fa-file-invoice"></i></span>
+            <div>
+                <a href="hbs513-w10-fe-lecture.html">HBS513 - Fixed Effects (FE) Lecture</a>
+                <p>Full lecture content page explaining the Fixed Effects model.</p>
+            </div>
+        </div>
+        <div class="card">
+            <span class="card-icon"><i class="fas fa-graduation-cap"></i></span>
+            <div>
+                <a href="data101-m11-ai-ml-lab.html">DATA101 - AI/ML Lab Demo</a>
+                <p>Interactive lab component for artificial intelligence/machine learning principles.</p>
+            </div>
+        </div>
+        <div class="card">
+            <span class="card-icon"><i class="fas fa-balance-scale"></i></span>
+            <div>
+                <a href="hbs514-m4-ethics-lab.html">HBS514 - Ethics Lab Scenario</a>
+                <p>Branching scenario for ethical decision-making exercises.</p>
+            </div>
+        </div>
+        <div class="card">
+            <span class="card-icon"><i class="fas fa-project-diagram"></i></span>
+            <div>
+                <a href="data101-journey-map.html">DATA101 - Data Science Journey Map</a>
+                <p>Click-and-reveal sequence of the data science lifecycle steps.</p>
+            </div>
+        </div>
+    </div>
 
-    <section>
-        <h2>Other / Drafts</h2>
-        <div class="grid">
-             <a href="ilos/book-inventory.html" class="card">
-                <span class="tag">Draft</span>
-                <h3>Book Inventory</h3>
-                <p>Inventory management interface.</p>
-            </a>
+    <!-- 2. GENERIC REUSABLE TEMPLATES (MOVED TO MIDDLE) -->
+    <h3 class="text-xl">2. Generic Components (Reusable Templates)</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <div class="card">
+            <span class="card-icon"><i class="fas fa-clipboard-check"></i></span>
+            <div>
+                <a href="interactive-pre-launch-checklist.html">Interactive Checklist</a>
+                <p>Tool for tracking progress or readiness (saves state in browser).</p>
+            </div>
         </div>
-    </section>
+        <div class="card">
+            <span class="card-icon"><i class="fas fa-map-marker-alt"></i></span>
+            <div>
+                <a href="chinese-cuisine-hotspot.html">Hotspot Interaction: Chinese Cuisine Map</a>
+                <p>Click-to-reveal content overlay for image exploration.</p>
+            </div>
+        </div>
+        <div class="card">
+            <span class="card-icon"><i class="fas fa-calculator"></i></span>
+            <div>
+                <a href="data101-m8-probability-lab.html">DATA101 - Probability Lab (Generic)</a>
+                <p>JS-driven simulation and calculation tool for data concepts.</p>
+            </div>
+        </div>
+        <div class="card">
+            <span class="card-icon"><i class="fas fa-ruler"></i></span>
+            <div>
+                <a href="course-mapping.html">Course Mapping Template</a>
+                <p>Visual tool for outlining modules, CLOs, and assessments.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 3. VISUAL EFFECTS & UTILITIES (MOVED TO BOTTOM) -->
+    <h3 class="text-xl">3. Visual Effects & Utilities</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        
+        <div class="card">
+            <span class="card-icon"><i class="fas fa-tint"></i></span>
+            <div>
+                <a href="liquid-effect-single-file.html">Liquid Effect Background (3D/WebGL)</a>
+                <p>Dynamic, interactive 3D visual background and theme generator.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="card-icon"><i class="fas fa-cog"></i></span>
+            <div>
+                <a href="book-inventory.html">Generic Table Component (Inventory)</a>
+                <p>Styled, accessible table component demonstrating CSS attribute selectors.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 </body>
 </html>
