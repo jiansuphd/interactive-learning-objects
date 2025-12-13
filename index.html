@@ -79,10 +79,28 @@
     <h1 class="text-3xl">Interactive Learning Object (ILO) Gallery</h1>
     <p class="text-lg text-gray-600">Browse and launch components used in course development, organized by category.</p>
 
-    <!-- 1. COURSE ARCHIVES (MOVED UP) - Removed Numbering -->
+    <!-- 1. COURSE ARCHIVES (Specific Course Content) -->
     <h3 class="text-xl">Course Archives (Specific Course Content)</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         
+        <!-- NEW LOCATION: Lesson Player (Moved from Generic) -->
+        <div class="card">
+            <span class="card-icon"><i class="fas fa-play-circle"></i></span>
+            <div>
+                <a href="ilos/data101-m11-lesson-player.html" target="_blank">Lesson Player</a>
+                <p>Wrapper interface for sequential, multi-page course content (used in DATA101).</p>
+            </div>
+        </div>
+
+        <!-- Probability Lab (From generic, kept here as requested by previous step) -->
+        <div class="card">
+            <span class="card-icon"><i class="fas fa-calculator"></i></span>
+            <div>
+                <a href="ilos/data101-m8-probability-lab.html" target="_blank">DATA101 - Probability Lab</a>
+                <p>JS-driven simulation and calculation tool for data concepts (used in DATA101).</p>
+            </div>
+        </div>
+
         <div class="card">
             <span class="card-icon"><i class="fas fa-chart-bar"></i></span>
             <div>
@@ -111,18 +129,21 @@
                 <p>Branching scenario for ethical decision-making exercises.</p>
             </div>
         </div>
+
+    </div>
+
+    <!-- 2. GENERIC REUSABLE TEMPLATES (Reusable Templates) -->
+    <h3 class="text-xl">Generic Components (Reusable Templates)</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <!-- REMAINS: DATA101 - Journey Map (From Course Archives) -->
         <div class="card">
             <span class="card-icon"><i class="fas fa-project-diagram"></i></span>
             <div>
-                <a href="ilos/data101-journey-map.html" target="_blank">DATA101 - Data Science Journey Map</a>
-                <p>Click-and-reveal sequence of the data science lifecycle steps.</p>
+                <a href="ilos/data101-journey-map.html" target="_blank">Data Science Journey Map</a>
+                <p>Click-and-reveal sequence for process visualization (e.g., Data Science Lifecycle).</p>
             </div>
         </div>
-    </div>
-
-    <!-- 2. GENERIC REUSABLE TEMPLATES (MOVED TO MIDDLE) - Removed Numbering -->
-    <h3 class="text-xl">Generic Components (Reusable Templates)</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
         <div class="card">
             <span class="card-icon"><i class="fas fa-clipboard-check"></i></span>
@@ -138,13 +159,7 @@
                 <p>Click-to-reveal content overlay for image exploration.</p>
             </div>
         </div>
-        <div class="card">
-            <span class="card-icon"><i class="fas fa-calculator"></i></span>
-            <div>
-                <a href="ilos/data101-m8-probability-lab.html" target="_blank">DATA101 - Probability Lab</a>
-                <p>JS-driven simulation and calculation tool for data concepts.</p>
-            </div>
-        </div>
+        
         <div class="card">
             <span class="card-icon"><i class="fas fa-ruler"></i></span>
             <div>
@@ -152,17 +167,18 @@
                 <p>Visual tool for outlining modules, CLOs, and assessments.</p>
             </div>
         </div>
+        
+        <!-- REMOVED: Lesson Player Component (Moved to Course Archives) -->
 
     </div>
 
-    <!-- 3. VISUAL EFFECTS & UTILITIES (MOVED TO BOTTOM) - Removed Numbering -->
+    <!-- 3. VISUAL EFFECTS & UTILITIES -->
     <h3 class="text-xl">Visual Effects & Utilities</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         
         <div class="card">
             <span class="card-icon"><i class="fas fa-tint"></i></span>
             <div>
-                <!-- FIX: Changed link to the shorter, likely correct file name -->
                 <a href="ilos/liquid-effect.html" target="_blank">Liquid Effect Background (3D/WebGL)</a>
                 <p>Dynamic, interactive 3D visual background and theme generator.</p>
             </div>
