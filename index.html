@@ -3,230 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R. L. Stine's Book Inventory</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Roboto+Slab:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    
+    <title>ILO Design System</title>
     <style>
-        /* Base Spooky Styles */
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #1a1a1a;
-            color: #e5e5e5;
-            padding: 30px 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
         }
-
-        /* User Story 1: h1 element with id="title" */
-        h1#title {
-            font-family: 'Creepster', cursive;
-            color: #ff4500;
-            font-size: 3.5rem;
-            text-align: center;
-            text-shadow: 4px 4px 0px #000, 
-                         6px 6px 0px rgba(255, 69, 0, 0.4);
-            margin-bottom: 20px;
+        h1 { margin-bottom: 2rem; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
-
-        /* Table Styling */
-        table {
-            width: 90%;
-            max-width: 1000px;
-            border-collapse: collapse;
-            margin-top: 20px;
-            box-shadow: 0 0 20px rgba(255, 69, 0, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s;
+            border: 1px solid #e2e8f0;
+            text-decoration: none; /* Removed default underline from links */
+            color: inherit; /* Inherit text color */
+            display: block; /* Make anchor tag behave like a block for padding/margins */
         }
-        th, td {
-            padding: 12px 15px;
-            border: 1px solid #333;
-            text-align: left;
-            transition: background-color 0.3s;
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
         }
-        thead {
-            background-color: #4a4a4a;
-            color: #fff;
-            font-family: 'Roboto Slab', serif;
-            font-size: 1rem;
-        }
-        tbody tr:nth-child(even) {
-            background-color: #2a2a2a;
-        }
-        tbody tr:hover {
-            background-color: #383838;
-        }
-
-        /* -------------------------------------- */
-        /* --- CORE REQUIREMENTS --- */
-        /* -------------------------------------- */
-
-        /* User Story 25: Set display property of each span element */
-        span {
+        .tag {
             display: inline-block;
-        }
-
-        /* User Story 7, 19, 21, 23: Row Background Gradients (Attribute Selectors) */
-        
-        tr[class="read"] {
-            background-image: linear-gradient(to right, #2a2a2a 50%, #203520); /* Dark Green Read */
-        }
-        tr[class="to-read"] {
-            background-image: linear-gradient(to right, #2a2a2a 50%, #202035); /* Dark Blue To Read */
-        }
-        tr[class="in-progress"] {
-            background-image: linear-gradient(to right, #2a2a2a 50%, #352020); /* Dark Red In Progress */
-        }
-
-        /* ----------------------------------------------------- */
-        /* --- STATUS AND RATE CONTAINER STYLING --- */
-        /* ----------------------------------------------------- */
-        
-        /* User Story 35, 36, 37, 38: Target Status and Rate containers for Height, Width, Padding */
-        span[class="status"],
-        span[class^="rate"] { 
-            height: 25px;
-            width: 80px;
-            padding: 2px 6px; 
-            border-radius: 4px;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
             font-size: 0.75rem;
             font-weight: 600;
-            text-align: center;
-            line-height: 20px;
+            background: #e0f2fe;
+            color: #0369a1;
+            margin-bottom: 0.5rem;
         }
-
-        /* ----------------------------------------------------- */
-        /* --- STATUS COLORS (FIXED 26-34) --- */
-        /* ----------------------------------------------------- */
-
-        /* User Story 26, 27, 28: Target TO-READ Status */
-        tr[class="to-read"] span[class="status"] { 
-            border: 1px solid #7dd3fc; 
-            background-image: linear-gradient(to bottom, #0ea5e9, #06b6d4); 
-            color: #0c4a6e;
-        }
-
-        /* User Story 29, 30, 31: Target READ Status */
-        tr[class="read"] span[class="status"] { 
-            border: 1px solid #4ade80; 
-            background-image: linear-gradient(to bottom, #16a34a, #22c55e); 
-            color: #064e3b;
-        }
-
-        /* User Story 32, 33, 34: Target IN-PROGRESS Status */
-        tr[class="in-progress"] span[class="status"] { 
-            border: 1px solid #fca5a5; 
-            background-image: linear-gradient(to bottom, #dc2626, #f97316); 
-            color: #7f1d1d;
-        }
-
-        /* ----------------------------------------------------- */
-        /* --- RATE INNER SPAN STYLING --- */
-        /* ----------------------------------------------------- */
-
-        /* User Story 39-45: Style for the inner rating spans (the "dots") */
-        span[class^="rate"] > span { 
-            border: 1px solid #525252;
-            border-radius: 50%;
-            margin: 0 2px;
-            height: 14px;
-            width: 14px;
-            background-color: transparent; 
-        }
-
-        /* --- User Story 46, 47: Rating 1 --- */
-        span[class*="one"] > span:nth-child(1) { /* Targets first descendant */
-            background-image: linear-gradient(to top, #ffcb00, #ff8c00); 
-        }
+        .tag.sim { background: #fce7f3; color: #db2777; }
+        .tag.viz { background: #dcfce7; color: #166534; }
         
-        /* --- User Story 48, 49: Rating 2 --- */
-        span[class*="two"] > span:nth-child(-n+2) { /* Targets first two descendants */
-            background-image: linear-gradient(to top, #ffcb00, #ff8c00); 
-        }
-
-        /* --- User Story 50, 51: Rating 3 --- */
-        span[class*="three"] > span { /* Targets all descendants */
-            background-image: linear-gradient(to top, #ffcb00, #ff8c00); 
-        }
-
+        h3 { margin: 0.5rem 0; }
+        p { color: #64748b; font-size: 0.9rem; }
+        
+        section { margin-bottom: 4rem; } /* Spacing between major sections */
     </style>
 </head>
 <body>
+    <h1>Interactive Learning Objects (ILO) Library</h1>
+    
+    <section>
+        <h2>Generic Templates</h2>
+        <div class="grid">
+            <a href="templates/effects/liquid-effect.html" class="card">
+                <span class="tag viz">Visual FX</span>
+                <h3>Liquid Effect</h3>
+                <p>CSS-only fluid animation effect for background ambiance.</p>
+            </a>
+            <a href="templates/hotspot/chinese-cuisine-hotspot.html" class="card">
+                <span class="tag">Interaction</span>
+                <h3>Hotspot Activity</h3>
+                <p>Image-based exploration with modal popups.</p>
+            </a>
+             <a href="templates/timeline/course-mapping.html" class="card">
+                <span class="tag viz">Visualization</span>
+                <h3>Course Mapping</h3>
+                <p>Interactive timeline or map for curriculum structure.</p>
+            </a>
+             <a href="templates/checklist/interactive-pre-launch-checklist.html" class="card">
+                <span class="tag">Utility</span>
+                <h3>Pre-Launch Checklist</h3>
+                <p>Interactive checklist tool for course readiness.</p>
+            </a>
+        </div>
+    </section>
 
-    <!-- User Story 1: h1 element with id="title" and text "Book Inventory" -->
-    <h1 id="title">Book Inventory</h1>
+    <section>
+        <h2>Course Archives (Examples)</h2>
+        <div class="grid">
+            <!-- DATA101 Examples -->
+            <a href="examples/data101/m8-probability-lab.html" class="card">
+                <span class="tag sim">DATA101</span>
+                <h3>Probability Lab (M8)</h3>
+                <p>Interactive data simulation for Module 8.</p>
+            </a>
+            <a href="examples/data101/m11-ai-ml-lab.html" class="card">
+                <span class="tag sim">DATA101</span>
+                <h3>AI & ML Lab (M11)</h3>
+                <p>Artificial Intelligence concepts simulation.</p>
+            </a>
+             <a href="examples/data101/journey-map.html" class="card">
+                <span class="tag viz">DATA101</span>
+                <h3>Data Science Journey</h3>
+                <p>Course mapping visualization for the Data Science program.</p>
+            </a>
+            
+            <!-- HBS513 Examples -->
+            <a href="examples/hbs513/w7-its-lab.html" class="card">
+                <span class="tag sim">HBS513</span>
+                <h3>ITS Lab System (W7)</h3>
+                <p>Week 7: Information Tech systems lab interaction.</p>
+            </a>
+             <a href="examples/hbs513/w10-fe-lecture.html" class="card">
+                <span class="tag sim">HBS513</span>
+                <h3>FE Lecture (W10)</h3>
+                <p>Week 10: Financial Engineering lecture interactive elements.</p>
+            </a>
 
-    <!-- User Story 2: table element -->
-    <table>
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Rate</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Row 1: Read (Rating 3) -->
-            <tr class="read">
-                <td>Welcome to Camp Nightmare</td>
-                <td>R. L. Stine</td>
-                <td>Goosebumps (Series 1)</td>
-                <!-- User Story 5: Status column td contains span.status with text matching row class -->
-                <td><span class="status">Read</span></td>
-                <!-- User Story 6, 9: Rate column td contains span.rate wrapping three empty spans. -->
-                <td><span class="rate three"><span></span><span></span><span></span></span></td>
-            </tr>
-            
-            <!-- Row 2: In Progress (No Rating) -->
-            <tr class="in-progress">
-                <td>The New Girl</td>
-                <td>R. L. Stine</td>
-                <td>Fear Street (Series 1)</td>
-                <td><span class="status">In Progress</span></td>
-                <td><span class="rate"><span></span><span></span><span></span></span></td>
-            </tr>
-            
-            <!-- Row 3: To Read (No Rating) -->
-            <tr class="to-read">
-                <td>One Day at HorrorLand</td>
-                <td>R. L. Stine</td>
-                <td>Goosebumps (Series 2)</td>
-                <td><span class="status">To Read</span></td>
-                <td><span class="rate"><span></span><span></span><span></span></span></td>
-            </tr>
-            
-            <!-- Row 4: Read (Rating 2) -->
-            <tr class="read">
-                <td>The Babysitter</td>
-                <td>R. L. Stine</td>
-                <td>Fear Street (Series 2)</td>
-                <td><span class="status">Read</span></td>
-                <td><span class="rate two"><span></span><span></span><span></span></span></td>
-            </tr>
-            
-            <!-- Row 5: In Progress (No Rating) -->
-            <tr class="in-progress">
-                <td>Stay Out of the Basement</td>
-                <td>R. L. Stine</td>
-                <td>Goosebumps (Series 1)</td>
-                <td><span class="status">In Progress</span></td>
-                <td><span class="rate"><span></span><span></span><span></span></span></td>
-            </tr>
-            
-            <!-- Row 6: Read (Rating 1) -->
-            <tr class="read">
-                <td>The Wrong Number</td>
-                <td>R. L. Stine</td>
-                <td>Fear Street (Series 1)</td>
-                <td><span class="status">Read</span></td>
-                <td><span class="rate one"><span></span><span></span><span></span></span></td>
-            </tr>
-        </tbody>
-    </table>
-
+            <!-- HBS514 Examples -->
+             <a href="examples/hbs514/m4-ethics-lab.html" class="card">
+                <span class="tag sim">HBS514</span>
+                <h3>Ethics Lab (M4)</h3>
+                <p>Module 4: Ethical decision making branching scenario.</p>
+            </a>
+             <a href="examples/hbs514/m7-interactive-lab.html" class="card">
+                <span class="tag sim">HBS514</span>
+                <h3>Interactive Lab (M7)</h3>
+                <p>Module 7: Advanced interactive scenario.</p>
+            </a>
+        </div>
+    </section>
 </body>
 </html>
