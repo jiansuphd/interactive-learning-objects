@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquid Effect Demo</title>
+    
+    <!-- External Library Dependency (Using CDN) -->
+    
+    <style>
+        /* --- Styles extracted from Liquid_Effect.css --- */
+        body, html, #app {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            touch-action: none;
+            overflow: hidden; /* Hide scrollbars that might appear due to fixed canvas */
+        }
+
+        #app {
+            height: 100%;
+            font-family: "Montserrat", serif; /* Assuming Montserrat is available or falls back nicely */
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            overflow: hidden;
+        }
+
+        /* Styling for the link at the bottom */
+        .framer-link {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 1px 1px 2px black;
+            z-index: 20; /* Ensure link is above the canvas */
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+  <canvas id="canvas"></canvas>
+  <!-- Link from original index.html -->
+  <a target="_blank" href="https://www.framer.com/@kevin-levron/" class="framer-link">CodePen Creation</a>
+</div>
+
+
+<script type="module">
+    // --- JavaScript Logic from Liquid_Effect.js ---
+    
+    // The import statement now runs correctly because the script is a module.
+    import LiquidBackground from 'https://cdn.jsdelivr.net/npm/threejs-components@0.0.27/build/backgrounds/liquid1.min.js';
+
+    let app = null;
+
+    // --- Core Liquid Initialization ---
+    function initializeLiquid() {
+        const canvasElement = document.getElementById('canvas');
+        if (!canvasElement) return;
+
+        try {
+            app = LiquidBackground(canvasElement);
+            
+            // Initial Settings
+            app.loadImage('https://assets.codepen.io/33787/liquid.webp');
+            app.liquidPlane.material.metalness = 0.75;
+            app.liquidPlane.material.roughness = 0.25;
+            app.liquidPlane.uniforms.displacementScale.value = 5;
+            app.setRain(false);
+            
+        } catch (e) {
+            console.error("Error initializing LiquidBackground:", e);
+        }
+    }
+
+    // --- Initialization ---
+    (function() {
+        // Ensure DOM is ready before trying to get the canvas
+        window.addEventListener('DOMContentLoaded', initializeLiquid);
+    })();
+</script>
+
+</body>
+</html>

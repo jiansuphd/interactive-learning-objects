@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estimating Causal Effects with Fixed Effects Models</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        /* Adjusted max-width for better Canvas page readability */
+        .module-container {
+            max-width: 800px; 
+            margin: 0 auto;
+        }
+        /* Custom styles for emphasis to match document intent */
+        .fixed-effect-box {
+            background-color: #eff6ff; /* blue-50 */
+            border-left: 5px solid #3b82f6; /* blue-500 */
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0.5rem;
+        }
+        .code-block {
+            background-color: #1f2937; /* gray-800 */
+            color: #d1d5db; /* gray-300 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Removed sticky positioning for better iframe (Canvas) compatibility -->
+    <header class="bg-white shadow-sm">
+        <div class="module-container px-4 py-6">
+            <h1 class="text-xs font-semibold uppercase tracking-widest text-blue-600">HBS 513 Week 10</h1>
+            <h2 class="text-3xl font-bold text-gray-900 mt-1">Estimating Causal Effects with Fixed Effects Models</h2>
+        </div>
+    </header>
+
+    <main class="module-container px-4 py-8">
+
+        <!-- Introduction Section -->
+        <section class="mb-12">
+            <h3 class="text-xl font-semibold mb-4 text-gray-700">Introduction to Causal Inference Designs</h3>
+            <p class="text-gray-700 mb-4">In the past few weeks, we’ve explored how two research designs—<strong class="font-semibold text-blue-600">Regression Discontinuity (RD)</strong> and <strong class="font-semibold text-blue-600">Interrupted Time Series (ITS)</strong>—can help us get closer to causal claims when working with observational data, which is usually plagued by our inability to make true “like to like” comparisons.</p>
+            <p class="text-gray-700 mb-6">Both RD (relying on a policy cutoff) and ITS (relying on a sharp, well-timed intervention) create remarkably clean comparisons, but they share an important limitation: they only work under very specific conditions. Many public policy questions involve ongoing processes or gradual changes that don’t map neatly onto a cutoff or a single intervention moment.</p>
+            
+            <div class="fixed-effect-box">
+                <p class="font-bold text-lg text-blue-700">Enter Fixed Effects (FE)</p>
+                <p class="text-blue-700 mt-2">FE doesn’t need a cutoff or a sudden shock. Instead, it takes advantage of something we have in abundance in public administration: <strong class="font-extrabold">panel data</strong>—data structures that contain multiple observations of multiple units over time (e.g., many cities measured across many years).</p>
+                <p class="text-blue-700 mt-2">Fixed Effects offers an elegant solution: if we observe a unit repeatedly, we can compare it <strong class="underline">to itself</strong>, eliminating everything about that unit that does not change over time (stable unit-based confounders like organizational culture, demographics, etc.).</p>
+                <p class="text-blue-700 mt-2">This makes FE a broad, flexible framework, directly solving the problem we face constantly: <strong class="font-extrabold">units differ, and those differences bias simple regressions.</strong></p>
+            </div>
+        </section>
+
+        <!-- What FE Models Do in Principle -->
+        <section class="mb-12">
+            <h3 class="text-2xl font-bold mb-4 text-gray-900">What FE Models Do in Principle (NO MATH…YET)</h3>
+            <p class="text-gray-700 mb-4">The core idea is straightforward: <strong class="font-semibold">FE models isolate within-unit changes over time.</strong> Instead of comparing one unit to another (cross-sectional analysis trouble), FE compares each unit <strong class="underline">to itself</strong>, across the years we observe it.</p>
+            <p class="text-gray-700 mb-4">By comparing a unit to its own history, we leverage the fact that stable characteristics (political culture, long-standing resource levels, etc.) can’t explain why a unit’s outcomes go up or down <em class="italic">over time</em>. We effectively subtract out each unit’s long-run baseline.</p>
+            <p class="text-gray-700 mb-6">The comparison FE is built on is: <strong class="font-extrabold">higher than usual vs. lower than usual for the same unit.</strong></p>
+
+            <h4 class="text-xl font-semibold mt-6 mb-3 text-gray-800">FE's Biggest Requirement</h4>
+            <p class="text-gray-700 mb-4">Your key variables (X and Y) <strong class="font-bold">must vary over-time within each unit</strong>. If nothing changes (like a person's race or gender), the variable gets absorbed into the unit’s fixed effect and cannot be estimated.</p>
+        </section>
+
+        <!-- Examples Section -->
+        <section class="mb-12">
+            <h3 class="text-2xl font-bold mb-4 text-gray-900">Some Examples</h3>
+            <p class="text-gray-700 mb-6">In each case, notice that we have <strong class="font-semibold">(i) panel data</strong> and <strong class="font-semibold">(ii) time-varying variables</strong>:</p>
+            
+            <ul class="space-y-6">
+                <!-- Example 1 -->
+                <li class="p-4 bg-white rounded-lg shadow">
+                    <p class="font-bold text-lg text-blue-600">1. Staffing and Public Safety</p>
+                    <p class="text-sm text-gray-500 mb-2">Data structure: City-Year Panel Data</p>
+                    <p class="text-gray-700">Does changing the number of police officers in a city affect crime rates? FE handles stable city differences by comparing each city to itself over time: if staffing rises and falls year to year, how does crime change relative to the city’s own baseline?</p>
+                </li>
+                <!-- Example 2 -->
+                <li class="p-4 bg-white rounded-lg shadow">
+                    <p class="font-bold text-lg text-blue-600">2. School Funding and Student Achievement</p>
+                    <p class="text-sm text-gray-500 mb-2">Data structure: District-Year Panel</p>
+                    <p class="text-gray-700">Do changes in school funding affect student outcomes within districts? FE cuts through stable differences in capacity or resources. If per-pupil spending fluctuates, FE examines how test scores respond relative to that district’s long-run pattern.</p>
+                </li>
+            </ul>
+        </section>
+
+        <!-- What FE Models Are Actually Doing -->
+        <section class="mb-12">
+            <h3 class="text-2xl font-bold mb-4 text-gray-900">What FE Models Are Actually Doing</h3>
+            
+            <h4 class="text-xl font-semibold mt-6 mb-3 text-gray-800">The Usual FE Model</h4>
+            <p class="text-gray-700 mb-3">The formal FE model looks like a standard regression, but with one big addition: an intercept for every unit.</p>
+            <div class="code-block text-base">
+                $$Y_{it} = \alpha_i + \beta X_{it} + \varepsilon_{it}$$
+            </div>
+            <p class="text-gray-700 mt-3 mb-6">The $\alpha_i$ term is the <strong class="font-semibold">unit's personality</strong> (its long-term culture, demographics, etc.). In ordinary regressions, these stable differences create massive confounding, but the beauty of FE is that the model accounts for them automatically.</p>
+
+            <h4 class="text-xl font-semibold mt-6 mb-3 text-gray-800">The Intuitive Version: Subtracting Each Unit From Itself</h4>
+            <p class="text-gray-700 mb-3">This is what FE is actually doing behind the scenes, known as the "demeaned" form:</p>
+            <div class="code-block text-base">
+                $$Y_{it} - \bar{Y_i} = \beta(X_{it} - \bar{X_i}) + (\varepsilon_{it} - \bar{\varepsilon_i})$$
+            </div>
+            <p class="text-gray-700 mt-3 mb-4">This leaves us with a picture of how the unit moves <strong class="underline">relative to itself</strong> over time. Once we subtract each unit’s long-run baseline, all of those stable, hard-to-measure differences disappear (culture, wealth, geography): they simply fall out of the equation.</p>
+        </section>
+
+        <!-- Running a FE Model in Stata -->
+        <section class="mb-12">
+            <h3 class="text-2xl font-bold mb-4 text-gray-900">Running a FE Model in Stata</h3>
+            
+            <p class="text-gray-700 mb-4">Okay, let’s get to the meat of it all. Let’s walk through a full example using a small, simulated panel dataset. This will walk you through the BASICS of FE models. More fun will be had in the lab!</p>
+            
+            <p class="text-gray-700 mb-4">Okay, the dataset—attached on the module page this week—has simulated (again, fake) annual data on 200 cities, observed from 2010 through 2019. For each city-year, we have:</p>
+            
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-1 mb-4">
+                <li><strong class="font-semibold">crime</strong>: the violent crime rate per 1,000 residents</li>
+                <li><strong class="font-semibold">officers</strong>: police officers per 1,000 residents</li>
+                <li><strong class="font-semibold">city_id</strong>: a unique city identifier</li>
+                <li><strong class="font-semibold">year</strong>: the calendar year</li>
+            </ul>
+            
+            <p class="text-gray-700 mb-4">Cities naturally differ in their long-term safety levels (some are high-crime, some are low-crime) and we rarely observe all the reasons why. But within each city, staffing levels <strong class="italic">do</strong> rise and fall over time. That makes this an ideal situation for a FE model!</p>
+            
+            <p class="text-gray-700 mb-3">Again, the dataset (fe_example.dta) is on the module page. Open it up using the <code>use</code> command (or simply double clicking the .dta file).</p>
+            
+            <div class="code-block text-sm mb-6">
+                use "fe_example.dta", clear
+            </div>
+            
+            <h4 class="text-xl font-semibold mt-6 mb-3 text-gray-800">Step 1: Understand the Structure of the Data</h4>
+            <p class="text-gray-700 mb-4">Unlike the ITS example, where we followed <strong class="font-semibold">one</strong> unit over time, here we’re following <strong class="font-semibold">many</strong> units (cities), each observed repeatedly. This structure—multiple units, each measured over time—is what makes FE possible. Because every unit (city) has the same number of time periods in the dataset (10 times), we have what we call a “balanced” dataset. Most won’t be balanced the real world. It’s fine.</p>
+            
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-1 mb-6">
+                <li>200 cities</li>
+                <li>10 years each</li>
+                <li>2,000 total observations</li>
+            </ul>
+
+            <h4 class="text-xl font-semibold mt-6 mb-3 text-gray-800">Step 2: Declare the Panel Structure</h4>
+            <p class="text-gray-700 mb-4">The command that we will ultimately use to estimate the FE model—<code>xtreg</code>—needs you to tell assure it that its panel data first, and then tell it “what the unit is” and “what the time identifying variable is”. So, let’s make sure Stata is super clear that :</p>
+            
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-1 mb-4">
+                <li>The variable “city_id” identifies units and</li>
+                <li>The variable “year” identifies the time component to our panel data structure</li>
+            </ul>
+
+            <div class="code-block text-sm mb-4">
+                xtset city_id year
+            </div>
+            
+            <p class="text-gray-700 mb-6">You should see: <code class="font-mono bg-gray-200 p-0.5 rounded text-sm">panel variable: city_id (balanced)</code> <code class="font-mono bg-gray-200 p-0.5 rounded text-sm">time variable: year, 2010 to 2019</code>. Stata is telling you what we already know: we have a balanced panel with 10 observations per city. Gorgeous.</p>
+            
+            <h4 class="text-xl font-semibold mt-6 mb-3 text-gray-800">Step 3: Estimate the FE Model</h4>
+            <p class="text-gray-700 mb-4">We want to estimate the relationship between changes in staffing and changes in crime <strong class="font-semibold">within each city</strong>, relative to the city’s own long-run baseline.</p>
+            
+            <div class="code-block text-sm mb-4">
+                xtreg crime officers, fe vce(robust)
+            </div>
+            
+            <p class="text-gray-700 mb-3">This tells Stata to:</p>
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-1 mb-6">
+                <li>subtract each city’s average crime</li>
+                <li>subtract each city’s average staffing</li>
+                <li>regress the “ups and downs” of crime on the “ups and downs” of staffing</li>
+            </ul>
+            
+            <h4 class="text-xl font-semibold mt-6 mb-3 text-gray-800">Step 4: Interpreting the Results</h4>
+            <p class="text-gray-700 mb-3">Your Stata output should give you:</p>
+            
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-1 mb-4">
+                <li>$\beta = –0.29$</li>
+                <li>SE = 0.03</li>
+                <li>p &lt; 0.01</li>
+            </ul>
+            
+            <p class="text-gray-700 mb-3"><strong class="font-bold">Here is how we interpret this:</strong></p>
+            
+            <div class="fixed-effect-box">
+                <p class="text-blue-700">
+                    <strong class="font-bold">Interpretation:</strong> <em class="italic">Within the same city,</em> when the number of officers per 1,000 residents increases by one unit (relative to that city’s usual staffing level) crime decreases by about <strong class="font-bold">0.29 crimes per 1,000 residents</strong> (relative to the city’s own usual crime level).
+                </p>
+            </div>
+            
+            <p class="text-gray-700 mb-3"><strong class="font-bold">Key points:</strong></p>
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-1 mb-6">
+                <li>This is <strong class="italic">not</strong> comparing City A to City B.</li>
+                <li>This is comparing City A <strong class="italic">to itself</strong>, over time.</li>
+                <li>All stable city traits (wealth, politics, culture, geography, long-term crime patterns) have been removed.</li>
+                <li>The model is identifying the association between <strong class="font-semibold">within-city changes</strong> in staffing and <strong class="font-semibold">within-city changes</strong> in crime.</li>
+            </ul>
+        </section>
+        
+        <!-- Fixed Effects Assumptions & Limitations -->
+        <section class="mb-12">
+            <h3 class="text-2xl font-bold mb-4 text-gray-900">Fixed Effects Assumptions & Limitations</h3>
+            
+            <p class="text-gray-700 mb-4">Now that you’ve seen what FE models are doing—and why they can be so powerful—we need to step back and talk honestly about the assumptions that make these models work, and the limits that come along with them. Just like RD and ITS, FE is not magic. It solves some problems beautifully and leaves others untouched. Knowing the difference is what makes you a careful analyst.</p>
+            
+            <p class="text-gray-700 mb-6">Let’s start with the big idea. Fixed Effects works because it removes everything about a unit that does not change over time—its geography, its long-standing politics, its organizational culture, its history, its baseline level of resources. All of those features, which would wreak havoc in a simple cross-sectional regression, are wiped away when we compare a unit to itself over time. That’s the heart of FE’s identifying strategy.</p>
+
+            <h4 class="text-xl font-semibold mt-6 mb-3 text-gray-800">1. Time-Varying Confounders (FE only protects you from stable confounders)</h4>
+            
+            <p class="text-gray-700 mb-4">But the moment you say that out loud, the first assumption becomes clear: FE only protects you from confounders that are <strong class="font-semibold">stable</strong>. Anything that doesn’t move over time gets swept into the unit’s fixed effect and stops causing trouble. <strong class="font-extrabold">But what about confounders that do change over time?</strong></p>
+            
+            <p class="text-gray-700 mb-4">That’s the limitation. FE <strong class="font-bold">does not protect you from time-varying confounders</strong>—things that shift within a unit and move alongside both your X and your Y. If a city increases its officers at the same time it starts a big social services initiative, both of which influence crime, FE won’t separate those changes for you. The model can only adjust for the stable stuff; the moving pieces are still your responsibility as an analyst. This is the same type of “omitted variable” problem you’ve seen before—except now the omitted variable has to vary within units rather than across them.</p>
+            
+            <p class="text-gray-700 italic mb-6">Another way to think about it is: FE solves the “City A is richer than City B” problem, but it cannot solve the “City A introduced two policies at the same time” problem.</p>
+
+            <h4 class="text-xl font-semibold mt-6 mb-3 text-gray-800">2. Meaningful Within-Unit Variation (The "Wiggle" Problem)</h4>
+            
+            <p class="text-gray-700 mb-4">A second key assumption embedded in FE is that the <strong class="font-semibold">within-unit variation</strong> you observe is meaningful. FE lives entirely on the ups and downs of a unit over time. If your variable barely changes—say, officer staffing only wiggles by a tiny amount each year—FE will technically run, but it won’t have much real variation to work with. And if your variable changes in just one dramatic jump that isn’t repeated (e.g., one unusual year), then your entire estimate will essentially reflect that single jump. FE assumes that the within-unit variation is real, not just noise, and that it plausibly reflects the causal process you care about.</p>
+
+            <h4 class="text-xl font-semibold mt-6 mb-3 text-gray-800">3. Clean Relationship Between X and the Error Term</h4>
+            
+            <p class="text-gray-700 mb-4">There’s also a subtle but important assumption that rarely gets highlighted in MPP-level teaching: FE needs the relationship between X and the error term to be clean not just at one moment, but across the whole time series. In plainer language, FE assumes that unexpected shocks to the outcome (crime spikes, unusual events, etc.) don’t directly cause predictable future changes in the explanatory variable in ways the model can’t account for. You don’t need to memorize the econometric details, just understand the intuition: if last year’s crime jump automatically triggers this year’s staffing increase, and that dynamic isn’t modeled, it can make FE estimates hard to interpret causally.</p>
+
+            <h4 class="text-xl font-semibold mt-6 mb-3 text-gray-800">4. Cannot Estimate Time-Invariant Variables (The Disappearing Variables)</h4>
+            
+            <p class="text-gray-700 mb-4">And of course, one of the most visible limitations of FE is the one students notice immediately: you <strong class="font-bold">can’t estimate the effect of variables that don’t change within units</strong>. If race, gender, founding year, or mission type never change for a given unit, those variables disappear into the fixed effect. FE simply cannot tell you whether, for example, male officers have different job satisfaction than female officers—not because the effect doesn’t exist, but because FE has no variation to work with. But if racial composition of a police department changes over time, then FE can estimate that relationship at the organizational level because the variable actually moves.</p>
+
+            <h4 class="text-xl font-semibold mt-6 mb-3 text-gray-800">5. Loss of Between-Unit Information</h4>
+            
+            <p class="text-gray-700 mb-4">Finally, we should acknowledge that FE throws away all of the “between-unit” information. That’s intentional, but it has tradeoffs. Sometimes between-unit differences are interesting or telling (wealthier cities do tend to have lower crime, for example), but FE discards that pattern entirely. The model focuses only on whether a city becomes safer or more dangerous relative to its own past. This gives you a very clean within-unit comparison, but you lose the bigger structural patterns across units. Whether that’s good or bad depends on the question you’re trying to answer.</p>
+
+            <div class="fixed-effect-box">
+                <p class="font-bold text-lg text-blue-700">Summary</p>
+                <p class="text-blue-700 mt-2">So, when you stand back, the picture is this: FE gives you an incredibly powerful way to make credible comparisons by holding each unit constant and watching how it changes over time. But it also asks you to be thoughtful. You need enough meaningful within-unit variation. You need to worry about confounders that move with your explanatory variable. You need to be aware that some variables vanish inside the fixed effect. And you need to accept that your estimate is a very particular kind of comparison: within-unit and over time.</p>
+                <p class="text-blue-700 mt-2"><strong class="font-extrabold">In short, FE solves some big problems, but not all of them.</strong> Knowing what it gives you and what it doesn’t is the key to using it wisely.</p>
+            </div>
+        </section>
+
+        <!-- One Extension: Adding a Time Based FE -->
+        <section class="mb-12">
+            <h3 class="text-2xl font-bold mb-4 text-gray-900">One Extension: Adding a Time Based FE</h3>
+            
+            <p class="text-gray-700 mb-4">Up to this point, we’ve focused entirely on <strong class="font-semibold">unit Fixed Effects</strong>: the part of the model that holds each city (or agency, district, nonprofit) constant by subtracting off its long-run baseline. That alone gets us incredibly far because it removes all of those stable, hard-to-measure characteristics that otherwise confound our analysis.</p>
+
+            <p class="text-gray-700 mb-4">But if you think about how public policy works in the real world, units aren’t the only thing that change. Time itself often brings big shifts that affect <strong class="font-semibold">every unit at once</strong>. For example, what in a given year, some of the following events could simultaneously affect all of the units!</p>
+            
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-1 mb-4">
+                <li>A recession hits the whole country.</li>
+                <li>A federal law takes effect everywhere.</li>
+                <li>A new national policing strategy becomes standard.</li>
+                <li>A pandemic reshapes labor markets in every city simultaneously.</li>
+            </ul>
+
+            <p class="text-gray-700 mb-4">If those kinds of year-to-year shocks are happening while your X and Y are also changing, then even after applying unit Fixed Effects, you may still be comparing apples to oranges, just in a different kinda way. Unit FE removes differences <strong class="font-semibold">between units</strong>, but it <strong class="font-bold">does not remove differences between time periods</strong>. And those year-level forces can be just as confounding.</p>
+            <p class="text-gray-700 mb-6">This is where time-based Fixed Effects come in.</p>
+
+
+            <h4 class="text-xl font-semibold mb-3 text-gray-800">Time FE: The “Year Personality”</h4>
+            <p class="text-gray-700 mb-4">If unit FE give every city its own long-run baseline, time FE give every <strong class="font-semibold">year</strong> its own baseline. Conceptually, it’s the same exact idea—but applied to moments in time rather than units.</p>
+
+            <p class="text-gray-700 mb-4"><strong class="font-semibold">In plain language:</strong> Time Fixed Effects let the model say: “Some years are just different from others, and we should control for that.”</p>
+            
+            <p class="text-gray-700 mb-4">So if 2014 was a low-crime year everywhere, or 2018 saw a nationwide staffing surge, time FE pick that up. Just like unit FE absorb the stable identity of each city, time FE absorb the shared identity of each year.</p>
+
+            <p class="text-gray-700 mb-4">This gives us a cleaner comparison. Instead of comparing: City A in 2018 vs. City A in 2017, we’re actually comparing: City A in 2018 relative to what 2018 was like for everyone, versus City A in 2017 relative to what 2017 was like for everyone. Subtle, but important.</p>
+            
+            <p class="font-bold text-gray-700 mb-3">TLDR--The model is controlling for:</p>
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-1 mb-6">
+                <li>differences between cities (unit FE), and</li>
+                <li>differences between years (time FE).</li>
+            </ul>
+            
+            <p class="text-gray-700 mb-6">The only thing left—the signal we care about—is how changes in X within a city relate to changes in Y within the same city after stripping out the “year effect” that applies to everyone.</p>
+
+
+            <h4 class="text-xl font-semibold mb-3 text-gray-800">Why This Matters in Practice</h4>
+            <p class="text-gray-700 mb-4">Think back to the ITS module. Remember how powerful it was that the intervention happened at an exact moment in time? Time FE are basically the “passive version” of that logic: they control for any year-to-year shifts that might otherwise make us think X and Y are related when really both were responding to something else in that specific year.</p>
+
+            <p class="text-gray-700 mb-4">Here’s a simple story:</p>
+
+            <p class="text-gray-700 mb-4">Think back to the dataset we’ve been using linking officer staffing to crime. Imagine every city in the dataset experiences a decline in crime in 2014 due to a national policing directive. At the same time, several cities also increased their officer staffing in 2014. Without time FE, the model might see these two things happening in the same year and mistakenly attribute the drop in crime to the staffing increase—when in reality, crime was falling everywhere.</p>
+
+            <p class="text-gray-700 mb-6">With time FE, 2014 gets its own year-level intercept. The model learns: “Crime fell everywhere in 2014. That was a year thing, not a city thing.” And once that’s accounted for, the model looks only at whether staffing changes within a city predict crime changes <strong class="font-semibold">above and beyond</strong> the nationwide trend. In other words, time FE protect your model from misinterpreting national or global shocks as city-specific causal effects.</p>
+
+
+            <h4 class="text-xl font-semibold mb-3 text-gray-800">How We Add Time FE in Stata</h4>
+            <p class="text-gray-700 mb-3">The nice thing is: the implementation is trivial. Here is the basic FE model we ran earlier:</p>
+            
+            <div class="code-block text-sm mb-4">
+                xtreg crime officers, fe vce(robust)
+            </div>
+
+            <p class="text-gray-700 mb-3">To add time FE, you simply include the year indicators:</p>
+            <div class="code-block text-sm mb-6">
+                xtreg crime officers i.year, fe vce(robust)
+            </div>
+
+            <p class="text-gray-700 mb-3">That’s it. Under the hood, Stata is now estimating:</p>
+            
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-1 mb-6">
+                <li>one intercept per city (unit FE)</li>
+                <li>one intercept per year (time FE)</li>
+                <li>and the coefficient on officers is based on variation that remains after both of those sets of baselines are accounted for</li>
+            </ul>
+
+            <p class="text-gray-700 mb-4">The interpretation becomes: Within the same city, comparing years when staffing is higher than usual to years when staffing is lower than usual, <strong class="font-semibold">and holding constant anything that made that year different for all cities</strong>, crime tends to be lower by about .29 crimes per thousand residents.</p>
+            <p class="text-gray-700">It’s the same interpretive logic as before. We just added a layer of control that makes the comparison more credible.</p>
+        </section>
+        
+        <!-- Moving Forward -->
+        <section class="pb-10">
+            <h3 class="text-2xl font-bold mb-4 text-gray-900">Moving Forward</h3>
+            
+            <p class="text-gray-700 mb-4">OKAY. This module is too long. Sorry. I tried to cut and failed. </p>
+            
+            <p class="text-gray-700 mb-4">But hopefully you’ve gotten the point. You seen the full arc of Fixed Effects: why we use it, what problem it solves, how the model actually works, how to interpret it, and how to extend it with time fixed effects when we’re dealing with shocks or trends that affect every unit at once. You’ve also seen the FE model in action on a panel dataset and walked through the Stata commands you’ll use most often in practice.</p>
+
+            <p class="text-gray-700 mb-4"><strong class="font-extrabold text-blue-600">Now the real learning happens: actually doing it. Welcome, lab.</strong></p>
+            
+            <p class="text-gray-700 mb-3">In the upcoming lab, you’ll work with some real data and learn to run code yourself. You’ll:</p>
+            
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-2">
+                <li>explore a real panel structure,</li>
+                <li>declare the panel with <code>xtset</code>,</li>
+                <li>run the naive, pooled regression (and see why it’s misleading),</li>
+                <li>run the unit FE model,</li>
+                <li>interpret the “within-unit” meaning of the FE coefficient,</li>
+                <li>and then add time fixed effects to see how the estimate responds when we start absorbing the year-to-year shocks that affect everyone.</li>
+            </ul>
+
+            <p class="text-gray-700 mt-4 mb-4">Maybe some figures (I haven’t made the lab yet)</p>
+            
+            <p class="text-gray-700 mb-4">By the end of lab, these commands will feel natural. More importantly, the logic behind them will start to click: the FE model <strong class="italic">does</strong> exactly what we’ve been saying: it holds the unit constant, compares it to itself, and pulls out the change-based relationship we care about.</p>
+
+            <p class="text-gray-700 mb-4">And in two modules—the one after next week’s lab—the pieces you’ve learned here will slot directly into a much bigger framework (one you’ve likely heard about if you’ve work with and/or taken enough classes with public policy folks and/or economists): <strong class="font-extrabold text-blue-600">Difference-in-Differences (DiD)</strong>. If FE is the grammar, DiD is one of the most important “sentences” ever written in that grammar. DiD puts together unit FE, time FE, and a carefully structured treatment indicator to evaluate policies that turn on at different times for different units.</p>
+
+            <p class="text-gray-700 mb-4">You’ll see quickly that you already know half the model—unit FE and time FE—before we even introduce DiD. That’s super intentional. By understanding the backbone this week, you’ll be in an excellent position to understand why DiD works, what it assumes, and how to diagnose whether those assumptions hold.</p>
+
+            <p class="text-gray-700"><strong class="font-extrabold">So for now: take a deep breath, open the dataset, and get ready to poke around.</strong> FE is one of the most widely used tools in applied public policy research for a reason, and by the end of this week, you’ll understand exactly why.</p>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800">
+        <div class="module-container px-4 py-4">
+            <p class="text-center text-sm text-gray-400">HBS513 - Estimating Causal Effects Module Content</p>
+        </div>
+    </footer>
+
+</body>
+</html>

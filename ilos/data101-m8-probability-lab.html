@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA 101: Probability Casino Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Theme: Casino Green & Gold -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        felt: '#064e3b', // Dark Green
+                        feltLight: '#065f46',
+                        gold: '#f59e0b',
+                        goldLight: '#fbbf24',
+                        card: '#ffffff',
+                        chipRed: '#ef4444',
+                        chipBlack: '#1f2937',
+                        canvas: '#f0fdf4' // Very light green background
+                    },
+                    fontFamily: {
+                        serif: ['Georgia', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Chart Container Styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container { height: 400px; }
+        }
+
+        /* Animations */
+        .door { transition: transform 0.5s ease, background-color 0.3s; }
+        .door:hover { transform: translateY(-5px); }
+        .door.open { transform: perspective(600px) rotateY(-110deg); }
+        
+        .die {
+            width: 50px; height: 50px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-size: 24px;
+            border: 1px solid #ccc;
+        }
+
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-canvas text-gray-800 font-sans h-screen flex overflow-hidden">
+
+    <!-- Navigation Sidebar -->
+    <aside class="w-64 bg-felt text-white flex flex-col shadow-xl z-20 hidden md:flex">
+        <div class="p-6 border-b border-white/10 text-center">
+            <div class="text-4xl mb-2">🎲</div>
+            <h1 class="text-xl font-serif font-bold text-gold">Probability Lab</h1>
+            <p class="text-xs text-white/60 mt-1">DATA 101: Module 8</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="navigate('lobby')" id="nav-lobby" class="nav-item w-full text-left px-4 py-3 rounded hover:bg-white/10 transition active bg-white/10 border-l-4 border-gold">
+                1. The Lobby
+            </button>
+            <button onclick="navigate('dice')" id="nav-dice" class="nav-item w-full text-left px-4 py-3 rounded hover:bg-white/10 transition border-l-4 border-transparent">
+                2. Dice & Distributions
+            </button>
+            <button onclick="navigate('coins')" id="nav-coins" class="nav-item w-full text-left px-4 py-3 rounded hover:bg-white/10 transition border-l-4 border-transparent">
+                3. Coin Flip Law
+            </button>
+            <button onclick="navigate('monty')" id="nav-monty" class="nav-item w-full text-left px-4 py-3 rounded hover:bg-white/10 transition border-l-4 border-transparent">
+                4. Monty Hall Game
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Mobile Header -->
+    <div class="md:hidden fixed w-full bg-felt text-white z-30 px-4 py-3 flex justify-between items-center shadow-md">
+        <span class="font-serif font-bold text-gold">🎲 Probability Lab</span>
+        <button onclick="toggleMenu()" class="text-white border border-white/50 rounded px-2">☰</button>
+    </div>
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-0 bg-felt z-20 hidden flex-col pt-16 px-4 gap-2 md:hidden text-white">
+        <button onclick="navigate('lobby'); toggleMenu()" class="p-4 border-b border-white/10 text-left">1. The Lobby</button>
+        <button onclick="navigate('dice'); toggleMenu()" class="p-4 border-b border-white/10 text-left">2. Dice & Distributions</button>
+        <button onclick="navigate('coins'); toggleMenu()" class="p-4 border-b border-white/10 text-left">3. Coin Flip Law</button>
+        <button onclick="navigate('monty'); toggleMenu()" class="p-4 border-b border-white/10 text-left">4. Monty Hall Game</button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-8 pt-20 md:pt-8 relative">
+
+        <!-- SECTION 1: THE LOBBY -->
+        <section id="view-lobby" class="max-w-4xl mx-auto fade-in">
+            <header class="text-center mb-10">
+                <h2 class="text-4xl font-serif font-bold text-felt mb-4">Welcome to the Casino of Chance</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Probability is the mathematics of uncertainty. In this lab, we won't just calculate odds; we will 
+                    <span class="font-bold text-chipRed">simulate thousands of events</span> to see how math emerges from chaos.
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-gold text-center">
+                    <div class="text-4xl mb-2">🎰</div>
+                    <h3 class="font-bold text-lg mb-2">Sample Space</h3>
+                    <p class="text-sm text-gray-500">The set of all possible outcomes. (e.g., {1, 2, 3, 4, 5, 6} for a die).</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-felt text-center">
+                    <div class="text-4xl mb-2">🎯</div>
+                    <h3 class="font-bold text-lg mb-2">Event</h3>
+                    <p class="text-sm text-gray-500">A specific outcome we are looking for (e.g., Rolling a 6).</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-chipRed text-center">
+                    <div class="text-4xl mb-2">⚖️</div>
+                    <h3 class="font-bold text-lg mb-2">Law of Large Numbers</h3>
+                    <p class="text-sm text-gray-500">As we repeat an experiment, the average result gets closer to the expected value.</p>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <button onclick="navigate('dice')" class="bg-felt text-white px-8 py-3 rounded-full font-bold hover:bg-feltLight transition shadow-lg transform hover:scale-105">
+                    Enter the Dice Room &rarr;
+                </button>
+            </div>
+        </section>
+
+        <!-- SECTION 2: DICE SIMULATOR -->
+        <section id="view-dice" class="max-w-5xl mx-auto hidden fade-in">
+            <header class="mb-6 border-b border-gray-200 pb-4">
+                <h2 class="text-3xl font-serif font-bold text-felt">Dice & Distributions</h2>
+                <p class="text-gray-600">Roll two dice. The sum "7" is most common because there are more ways to make it (1+6, 2+5, 3+4...). Let's prove it.</p>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Controls -->
+                <div class="lg:col-span-1 flex flex-col gap-4">
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 text-center">
+                        <div class="flex justify-center gap-4 mb-6">
+                            <div id="die1" class="die text-2xl">1</div>
+                            <div id="die2" class="die text-2xl">1</div>
+                        </div>
+                        <p id="roll-total" class="text-xl font-bold text-felt mb-4">Total: 2</p>
+                        
+                        <div class="space-y-2">
+                            <button onclick="rollDice(1)" class="w-full bg-white border-2 border-felt text-felt py-2 rounded hover:bg-felt hover:text-white transition font-bold">
+                                Roll Once
+                            </button>
+                            <button onclick="rollDice(100)" class="w-full bg-gold text-white py-2 rounded hover:bg-goldLight transition font-bold shadow-sm">
+                                Fast Roll (x100)
+                            </button>
+                            <button onclick="rollDice(1000)" class="w-full bg-chipRed text-white py-2 rounded hover:bg-red-400 transition font-bold shadow-sm">
+                                Super Roll (x1,000)
+                            </button>
+                            <button onclick="resetDice()" class="text-xs text-gray-400 underline mt-2">Reset Data</button>
+                        </div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg text-sm text-blue-800">
+                        <strong>Look for the Shape:</strong> As you roll 1,000+ times, do you see a "Bell Curve" forming? This is the Normal Distribution emerging!
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="lg:col-span-2 bg-white p-4 rounded-xl shadow-md border border-gray-100">
+                    <div class="chart-container">
+                        <canvas id="diceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: COIN FLIP -->
+        <section id="view-coins" class="max-w-4xl mx-auto hidden fade-in">
+            <header class="mb-6 border-b border-gray-200 pb-4">
+                <h2 class="text-3xl font-serif font-bold text-felt">The Law of Large Numbers</h2>
+                <p class="text-gray-600">If you flip a coin 10 times, you might get 70% Heads. But if you flip it 10,000 times?</p>
+            </header>
+
+            <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+                <div class="flex justify-center items-center gap-8 mb-8">
+                    <div class="text-center">
+                        <div class="text-xs uppercase tracking-widest text-gray-400 mb-1">Heads</div>
+                        <div id="heads-count" class="text-3xl font-bold text-felt">0</div>
+                        <div id="heads-pct" class="text-sm text-gold font-bold">0%</div>
+                    </div>
+                    <div class="h-12 w-px bg-gray-200"></div>
+                    <div class="text-center">
+                        <div class="text-xs uppercase tracking-widest text-gray-400 mb-1">Total Flips</div>
+                        <div id="total-flips" class="text-5xl font-black text-gray-800">0</div>
+                    </div>
+                    <div class="h-12 w-px bg-gray-200"></div>
+                    <div class="text-center">
+                        <div class="text-xs uppercase tracking-widest text-gray-400 mb-1">Tails</div>
+                        <div id="tails-count" class="text-3xl font-bold text-felt">0</div>
+                        <div id="tails-pct" class="text-sm text-gold font-bold">0%</div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="w-full h-4 bg-gray-200 rounded-full overflow-hidden mb-8 relative">
+                    <div id="ratio-bar" class="h-full bg-gold transition-all duration-500" style="width: 50%"></div>
+                    <div class="absolute top-0 left-1/2 w-0.5 h-full bg-black/20"></div> <!-- 50% marker -->
+                </div>
+
+                <div class="flex justify-center gap-4">
+                    <button onclick="flipCoin(1)" class="px-6 py-3 border-2 border-felt text-felt rounded-lg font-bold hover:bg-felt hover:text-white transition">
+                        Flip 1
+                    </button>
+                    <button onclick="flipCoin(10)" class="px-6 py-3 bg-felt text-white rounded-lg font-bold hover:bg-feltLight transition shadow-md">
+                        Flip 10
+                    </button>
+                    <button onclick="flipCoin(1000)" class="px-6 py-3 bg-chipBlack text-white rounded-lg font-bold hover:bg-gray-700 transition shadow-md">
+                        Flip 1,000
+                    </button>
+                </div>
+                
+                <p class="mt-6 text-sm text-gray-500 italic">
+                    Note: With small sample sizes, the percentage swings wildly. With large samples, it settles near 50%.
+                </p>
+            </div>
+        </section>
+
+        <!-- SECTION 4: MONTY HALL -->
+        <section id="view-monty" class="max-w-5xl mx-auto hidden fade-in">
+            <header class="mb-6 text-center">
+                <h2 class="text-3xl font-serif font-bold text-felt">The Monty Hall Problem</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    A game show puzzle that confuses everyone. You pick a door. Monty opens a different door to reveal a goat. 
+                    <strong>Should you switch doors or stay?</strong>
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 text-center">
+                <!-- Door 1 -->
+                <div onclick="pickDoor(0)" id="door-0" class="door cursor-pointer bg-felt h-64 rounded-t-full border-4 border-gold relative flex items-center justify-center shadow-lg group">
+                    <span class="text-6xl font-serif text-white font-bold group-hover:scale-110 transition">1</span>
+                    <div class="absolute inset-0 bg-white opacity-0" id="content-0"></div> <!-- Content behind door -->
+                </div>
+                <!-- Door 2 -->
+                <div onclick="pickDoor(1)" id="door-1" class="door cursor-pointer bg-felt h-64 rounded-t-full border-4 border-gold relative flex items-center justify-center shadow-lg group">
+                    <span class="text-6xl font-serif text-white font-bold group-hover:scale-110 transition">2</span>
+                    <div class="absolute inset-0 bg-white opacity-0" id="content-1"></div>
+                </div>
+                <!-- Door 3 -->
+                <div onclick="pickDoor(2)" id="door-2" class="door cursor-pointer bg-felt h-64 rounded-t-full border-4 border-gold relative flex items-center justify-center shadow-lg group">
+                    <span class="text-6xl font-serif text-white font-bold group-hover:scale-110 transition">3</span>
+                    <div class="absolute inset-0 bg-white opacity-0" id="content-2"></div>
+                </div>
+            </div>
+
+            <div class="text-center mb-8 h-16">
+                <p id="monty-msg" class="text-xl font-bold text-gray-800">Pick a door to start!</p>
+                <button id="switch-btn" onclick="finalizeChoice(true)" class="hidden px-6 py-2 bg-gold text-white rounded-full font-bold shadow-md hover:scale-105 transition mx-2">Switch!</button>
+                <button id="stay-btn" onclick="finalizeChoice(false)" class="hidden px-6 py-2 bg-gray-500 text-white rounded-full font-bold shadow-md hover:scale-105 transition mx-2">Stay</button>
+                <button id="reset-monty" onclick="resetMonty()" class="hidden px-6 py-2 bg-felt text-white rounded-full font-bold shadow-md hover:scale-105 transition mx-2">Play Again</button>
+            </div>
+
+            <!-- Simulation Stats -->
+            <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200 grid grid-cols-2 gap-8">
+                <div class="text-center">
+                    <h4 class="text-gray-500 text-sm uppercase tracking-wide">Win Rate if you STAY</h4>
+                    <div class="text-3xl font-bold text-gray-700"><span id="stay-wins">0</span> / <span id="stay-plays">0</span></div>
+                    <div id="stay-pct" class="text-sm font-bold text-gray-400">0%</div>
+                </div>
+                <div class="text-center border-l border-gray-200">
+                    <h4 class="text-gray-500 text-sm uppercase tracking-wide">Win Rate if you SWITCH</h4>
+                    <div class="text-3xl font-bold text-gold"><span id="switch-wins">0</span> / <span id="switch-plays">0</span></div>
+                    <div id="switch-pct" class="text-sm font-bold text-gold">0%</div>
+                </div>
+                <div class="col-span-2 text-center">
+                    <button onclick="simulateMonty(100)" class="text-xs bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded text-gray-600">
+                        ⚡ Auto-Simulate 100 Games
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- Navigation ---
+        function navigate(viewId) {
+            document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById('view-' + viewId);
+            target.classList.remove('hidden');
+            target.classList.remove('fade-in');
+            void target.offsetWidth;
+            target.classList.add('fade-in');
+
+            // Nav styling
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-white/10', 'border-gold');
+                el.classList.add('border-transparent');
+            });
+            const navBtn = document.getElementById('nav-' + viewId);
+            if(navBtn) {
+                navBtn.classList.add('bg-white/10', 'border-gold');
+                navBtn.classList.remove('border-transparent');
+            }
+        }
+        function toggleMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        }
+
+        // --- Dice Logic ---
+        let diceCounts = new Array(13).fill(0); // Indexes 2-12 used
+        let diceChart;
+
+        function initDiceChart() {
+            const ctx = document.getElementById('diceChart').getContext('2d');
+            diceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [2,3,4,5,6,7,8,9,10,11,12],
+                    datasets: [{
+                        label: 'Frequency',
+                        data: [0,0,0,0,0,0,0,0,0,0,0],
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: {display:false} },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function rollDice(times) {
+            for(let i=0; i<times; i++) {
+                const d1 = Math.floor(Math.random() * 6) + 1;
+                const d2 = Math.floor(Math.random() * 6) + 1;
+                const sum = d1 + d2;
+                diceCounts[sum]++;
+                
+                // Update visual dice only on last roll
+                if (i === times - 1) {
+                    document.getElementById('die1').innerText = d1;
+                    document.getElementById('die2').innerText = d2;
+                    document.getElementById('roll-total').innerText = "Total: " + sum;
+                }
+            }
+            updateDiceChart();
+        }
+
+        function updateDiceChart() {
+            const data = diceCounts.slice(2, 13); // Get counts for 2-12
+            diceChart.data.datasets[0].data = data;
+            diceChart.update();
+        }
+
+        function resetDice() {
+            diceCounts = new Array(13).fill(0);
+            updateDiceChart();
+        }
+
+        // --- Coin Logic ---
+        let heads = 0;
+        let tails = 0;
+
+        function flipCoin(times) {
+            for(let i=0; i<times; i++) {
+                if(Math.random() < 0.5) heads++; else tails++;
+            }
+            updateCoinUI();
+        }
+
+        function updateCoinUI() {
+            const total = heads + tails;
+            document.getElementById('heads-count').innerText = heads.toLocaleString();
+            document.getElementById('tails-count').innerText = tails.toLocaleString();
+            document.getElementById('total-flips').innerText = total.toLocaleString();
+
+            const hPct = total === 0 ? 50 : (heads / total) * 100;
+            const tPct = total === 0 ? 50 : (tails / total) * 100;
+
+            document.getElementById('heads-pct').innerText = hPct.toFixed(1) + "%";
+            document.getElementById('tails-pct').innerText = tPct.toFixed(1) + "%";
+            document.getElementById('ratio-bar').style.width = hPct + "%";
+        }
+
+        // --- Monty Hall Logic ---
+        let montyState = {
+            prizeDoor: 0,
+            selectedDoor: null,
+            openedDoor: null,
+            isGameOver: false
+        };
+        
+        let montyStats = { switchWins: 0, switchPlays: 0, stayWins: 0, stayPlays: 0 };
+
+        function resetMonty() {
+            montyState.prizeDoor = Math.floor(Math.random() * 3);
+            montyState.selectedDoor = null;
+            montyState.openedDoor = null;
+            montyState.isGameOver = false;
+
+            // Reset UI
+            [0,1,2].forEach(i => {
+                const door = document.getElementById(`door-${i}`);
+                door.classList.remove('bg-gold', 'opacity-50');
+                door.querySelector('span').innerText = i+1;
+            });
+            document.getElementById('monty-msg').innerText = "Pick a door to start!";
+            document.getElementById('switch-btn').classList.add('hidden');
+            document.getElementById('stay-btn').classList.add('hidden');
+            document.getElementById('reset-monty').classList.add('hidden');
+        }
+
+        function pickDoor(doorIdx) {
+            if (montyState.selectedDoor !== null) return; // Already picked
+            montyState.selectedDoor = doorIdx;
+            
+            // Highlight selection
+            document.getElementById(`door-${doorIdx}`).classList.add('bg-gold');
+
+            // Monty opens a goat door
+            let goatDoors = [0,1,2].filter(d => d !== montyState.prizeDoor && d !== montyState.selectedDoor);
+            montyState.openedDoor = goatDoors[Math.floor(Math.random() * goatDoors.length)];
+
+            // Visual for opened door
+            const openEl = document.getElementById(`door-${montyState.openedDoor}`);
+            openEl.classList.add('opacity-50');
+            openEl.querySelector('span').innerText = "🐐";
+
+            document.getElementById('monty-msg').innerText = `I opened Door ${montyState.openedDoor + 1} to reveal a GOAT! Do you want to Switch or Stay?`;
+            document.getElementById('switch-btn').classList.remove('hidden');
+            document.getElementById('stay-btn').classList.remove('hidden');
+        }
+
+        function finalizeChoice(didSwitch) {
+            let finalChoice = montyState.selectedDoor;
+            if (didSwitch) {
+                finalChoice = [0,1,2].find(d => d !== montyState.selectedDoor && d !== montyState.openedDoor);
+                // Update Highlight
+                document.getElementById(`door-${montyState.selectedDoor}`).classList.remove('bg-gold');
+                document.getElementById(`door-${finalChoice}`).classList.add('bg-gold');
+            }
+
+            const won = finalChoice === montyState.prizeDoor;
+            
+            // Reveal Prize
+            const prizeEl = document.getElementById(`door-${montyState.prizeDoor}`);
+            prizeEl.querySelector('span').innerText = "🚗";
+            
+            document.getElementById('monty-msg').innerHTML = won ? 
+                "<span class='text-green-600 text-2xl'>YOU WON THE CAR!</span>" : 
+                "<span class='text-red-600 text-2xl'>It's a GOAT. You lost.</span>";
+
+            // Update Stats
+            if (didSwitch) {
+                montyStats.switchPlays++;
+                if (won) montyStats.switchWins++;
+            } else {
+                montyStats.stayPlays++;
+                if (won) montyStats.stayWins++;
+            }
+            updateMontyStats();
+
+            // Buttons
+            document.getElementById('switch-btn').classList.add('hidden');
+            document.getElementById('stay-btn').classList.add('hidden');
+            document.getElementById('reset-monty').classList.remove('hidden');
+        }
+
+        function updateMontyStats() {
+            document.getElementById('stay-wins').innerText = montyStats.stayWins;
+            document.getElementById('stay-plays').innerText = montyStats.stayPlays;
+            document.getElementById('stay-pct').innerText = montyStats.stayPlays ? Math.round((montyStats.stayWins/montyStats.stayPlays)*100)+"%" : "0%";
+
+            document.getElementById('switch-wins').innerText = montyStats.switchWins;
+            document.getElementById('switch-plays').innerText = montyStats.switchPlays;
+            document.getElementById('switch-pct').innerText = montyStats.switchPlays ? Math.round((montyStats.switchWins/montyStats.switchPlays)*100)+"%" : "0%";
+        }
+
+        function simulateMonty(times) {
+            for(let i=0; i<times; i++) {
+                // Quick simulation logic
+                const prize = Math.floor(Math.random() * 3);
+                const pick = Math.floor(Math.random() * 3);
+                // Stay Strategy: Win if pick == prize
+                if (pick === prize) montyStats.stayWins++;
+                montyStats.stayPlays++;
+                // Switch Strategy: Win if pick != prize (because the other non-open door MUST be the car)
+                if (pick !== prize) montyStats.switchWins++;
+                montyStats.switchPlays++;
+            }
+            updateMontyStats();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initDiceChart();
+            resetMonty();
+        });
+
+    </script>
+</body>
+</html>

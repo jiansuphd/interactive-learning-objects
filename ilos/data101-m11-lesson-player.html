@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 11: AI & ML Basics</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Merriweather:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0f172a',      /* Slate 900 */
+                        sidebarBg: '#1e293b',   /* Slate 800 */
+                        cardBg: '#334155',      /* Slate 700 */
+                        accent: '#06b6d4',      /* Cyan 500 */
+                        accentHover: '#0891b2', /* Cyan 600 */
+                        textMain: '#f8fafc',    /* Slate 50 */
+                        textMuted: '#94a3b8',   /* Slate 400 */
+                        success: '#10b981',     /* Emerald 500 */
+                        error: '#ef4444',       /* Red 500 */
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Animation Utilities */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; opacity: 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Interactive Elements */
+        .interactive-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .interactive-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
+
+        /* Flip Card */
+        .flip-card { perspective: 1000px; cursor: pointer; height: 200px; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; }
+        .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 1.5rem; border-radius: 0.5rem; }
+        .flip-card-front { background-color: #334155; color: white; border: 1px solid #475569; }
+        .flip-card-back { background-color: #06b6d4; color: #0f172a; transform: rotateY(180deg); }
+
+        /* Sortable Item Styles */
+        .sort-item { cursor: grab; transition: all 0.2s ease; }
+        .sort-item:active { cursor: grabbing; transform: scale(1.05); }
+        .sort-target { transition: background-color 0.3s ease; }
+        .sort-target.drag-over { background-color: rgba(6, 182, 212, 0.2); border-color: #06b6d4; }
+
+        /* Click and Reveal Styles */
+        .reveal-btn { text-align: left; padding: 1rem; border-radius: 0.5rem; background-color: #334155; color: #94a3b8; transition: all 0.3s ease; border-left: 4px solid transparent; }
+        .reveal-btn:hover { background-color: #475569; color: white; }
+        .reveal-btn.active { background-color: #06b6d4; color: #0f172a; border-left-color: #fff; font-weight: bold; }
+        .reveal-content { opacity: 0; transition: opacity 0.4s ease; }
+        .reveal-content.active { opacity: 1; }
+
+        /* Hotspot Styles */
+        .hotspot-container { position: relative; width: 100%; max-width: 800px; margin: 0 auto; overflow: hidden; border-radius: 0.75rem; border: 1px solid #334155; background-color: #1e293b; }
+        .hotspot-img { 
+            width: 100%; 
+            display: block; 
+            min-height: 300px; 
+            object-fit: cover; 
+            background-color: #0f172a; /* Fallback color */
+        }
+        .hotspot-marker {
+            position: absolute; width: 32px; height: 32px; border-radius: 50%;
+            background-color: rgba(6, 182, 212, 0.9); color: white; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.4);
+            transition: transform 0.2s, background-color 0.2s; z-index: 10;
+            animation: pulse-marker 2s infinite;
+        }
+        .hotspot-marker:hover { transform: scale(1.1); background-color: #fff; color: #06b6d4; }
+        @keyframes pulse-marker {
+            0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(6, 182, 212, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+        }
+        
+        /* Modal/Popover for Hotspot Content */
+        .hotspot-modal {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+            background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(4px);
+            border: 1px solid #334155; padding: 1.5rem; border-radius: 0.75rem;
+            color: #fff; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 20;
+            width: 80%; max-width: 400px; display: flex; flex-col: column; justify-content: center;
+        }
+        .hotspot-modal.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+        .hotspot-close {
+            position: absolute; top: 0.5rem; right: 0.5rem; color: #94a3b8; cursor: pointer;
+            padding: 0.25rem; border-radius: 0.25rem; transition: background 0.2s; background: transparent; border: none; font-size: 1.2rem; line-height: 1;
+        }
+        .hotspot-close:hover { background-color: rgba(255,255,255,0.1); color: white; }
+
+        /* Sidebar Active State */
+        .nav-item.active { border-left: 4px solid #06b6d4; background-color: rgba(6, 182, 212, 0.1); color: #fff; }
+    </style>
+</head>
+<body class="bg-darkBg text-textMain font-sans h-screen flex overflow-hidden">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="w-72 bg-sidebarBg border-r border-slate-700 flex flex-col z-20 hidden md:flex shadow-xl">
+        <div class="p-6 border-b border-slate-700">
+            <span class="text-xs font-bold tracking-widest text-accent uppercase">Module 11</span>
+            <h1 class="text-xl font-bold mt-1 leading-tight">AI & Machine Learning Basics</h1>
+            
+            <!-- Progress Bar -->
+            <div class="mt-4">
+                <div class="flex justify-between text-xs text-textMuted mb-1">
+                    <span>Progress</span>
+                    <span id="progress-text">0%</span>
+                </div>
+                <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="bg-accent h-full w-0 transition-all duration-500"></div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li>
+                    <button onclick="loadLesson(0)" class="nav-item w-full text-left px-6 py-3 text-sm text-textMuted hover:text-white hover:bg-slate-700 transition-colors flex items-center gap-3 active">
+                        <span class="w-6 h-6 rounded-full border border-slate-500 flex items-center justify-center text-xs font-mono">1</span>
+                        Introduction
+                    </button>
+                </li>
+                <li>
+                    <button onclick="loadLesson(1)" class="nav-item w-full text-left px-6 py-3 text-sm text-textMuted hover:text-white hover:bg-slate-700 transition-colors flex items-center gap-3">
+                        <span class="w-6 h-6 rounded-full border border-slate-500 flex items-center justify-center text-xs font-mono">2</span>
+                        Classification Models
+                    </button>
+                </li>
+                <li>
+                    <button onclick="loadLesson(2)" class="nav-item w-full text-left px-6 py-3 text-sm text-textMuted hover:text-white hover:bg-slate-700 transition-colors flex items-center gap-3">
+                        <span class="w-6 h-6 rounded-full border border-slate-500 flex items-center justify-center text-xs font-mono">3</span>
+                        Foundations of ML
+                    </button>
+                </li>
+                <li>
+                    <button onclick="loadLesson(3)" class="nav-item w-full text-left px-6 py-3 text-sm text-textMuted hover:text-white hover:bg-slate-700 transition-colors flex items-center gap-3">
+                        <span class="w-6 h-6 rounded-full border border-slate-500 flex items-center justify-center text-xs font-mono">4</span>
+                        Data Science Ethics
+                    </button>
+                </li>
+                <li>
+                    <button onclick="loadLesson(4)" class="nav-item w-full text-left px-6 py-3 text-sm text-textMuted hover:text-white hover:bg-slate-700 transition-colors flex items-center gap-3">
+                        <span class="w-6 h-6 rounded-full border border-slate-500 flex items-center justify-center text-xs font-mono">5</span>
+                        Summary & Review
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 relative overflow-hidden flex flex-col">
+        
+        <!-- Mobile Header -->
+        <div class="md:hidden h-14 bg-sidebarBg border-b border-slate-700 flex items-center justify-between px-4 shrink-0">
+            <span class="font-bold text-sm">AI & ML Basics</span>
+            <button class="text-textMuted hover:text-white">Menu</button> <!-- Placeholder for mobile menu toggle -->
+        </div>
+
+        <!-- Scrollable Content Stage -->
+        <div id="content-stage" class="flex-1 overflow-y-auto scroll-smooth">
+            <div class="max-w-3xl mx-auto px-6 py-12 min-h-full">
+                
+                <!-- DYNAMIC CONTENT INJECTED HERE -->
+                <div id="lesson-content"></div>
+
+                <!-- Navigation Footer -->
+                <div class="mt-20 pt-8 border-t border-slate-700 flex justify-between">
+                    <button onclick="prevLesson()" id="btn-prev" class="text-textMuted hover:text-accent transition flex items-center gap-2 opacity-50 cursor-not-allowed" disabled>
+                        ← Previous Lesson
+                    </button>
+                    <button onclick="nextLesson()" id="btn-next" class="bg-accent hover:bg-accentHover text-darkBg font-bold py-2 px-6 rounded-full transition shadow-lg flex items-center gap-2">
+                        Next Lesson →
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- Data: Sorting Activity ---
+        const sortItems = [
+            { id: 1, text: "Predicting house prices (Regression)", category: "supervised" },
+            { id: 2, text: "Grouping customers by behavior (Clustering)", category: "unsupervised" },
+            { id: 3, text: "Spam vs. Ham email filter", category: "supervised" },
+            { id: 4, text: "Fraud detection (Anomaly Detection)", category: "unsupervised" }
+        ];
+
+        // --- Data: Click and Reveal Content (Tab Style) ---
+        const revealData = [
+            {
+                id: "bias",
+                title: "Algorithmic Bias",
+                content: "Algorithms can perpetuate or amplify biases present in training data. If a dataset used to train a hiring AI contains mostly male resumes, the model may learn to penalize female candidates.",
+                icon: "⚖️"
+            },
+            {
+                id: "privacy",
+                title: "Data Privacy",
+                content: "Machine learning models often require vast amounts of data. Ensuring this data is collected with consent and anonymized to protect individual identities is a critical ethical obligation.",
+                icon: "🔒"
+            },
+            {
+                id: "transparency",
+                title: "Transparency",
+                content: "Many advanced models, especially Deep Learning neural networks, act as 'black boxes.' It can be difficult to explain *why* a model made a specific decision, raising accountability issues.",
+                icon: "🔍"
+            },
+            {
+                id: "accountability",
+                title: "Accountability",
+                content: "When an AI system makes a mistake—like a self-driving car accident or a wrongful medical diagnosis—who is responsible? Determining liability is a major ongoing challenge.",
+                icon: "🤝"
+            }
+        ];
+
+        // --- Data: Hotspot Content ---
+        const hotspotData = [
+            {
+                top: "20%", left: "30%",
+                title: "Input Layer",
+                text: "Data enters the neural network here. Each node represents a single feature or variable from your dataset (e.g., pixel brightness in an image)."
+            },
+            {
+                top: "50%", left: "50%",
+                title: "Hidden Layers",
+                text: "The 'Black Box' magic happens here. Nodes process inputs using weights and biases to detect complex patterns and relationships."
+            },
+            {
+                top: "80%", left: "70%",
+                title: "Output Layer",
+                text: "The final decision is made. For classification tasks, this layer outputs the probability of each category (e.g., 80% Cat, 20% Dog)."
+            }
+        ];
+
+        // --- Data: Lesson Content ---
+        const lessons = [
+            {
+                title: "Introduction: Beyond Binary",
+                html: `
+                    <div class="fade-in">
+                        <div class="aspect-video bg-black rounded-xl overflow-hidden mb-8 shadow-2xl border border-slate-700 relative group cursor-pointer">
+                            <div class="absolute inset-0 flex items-center justify-center bg-slate-800/50 group-hover:bg-slate-800/30 transition">
+                                <div class="w-16 h-16 bg-accent/90 rounded-full flex items-center justify-center pl-1 shadow-lg transform group-hover:scale-110 transition">
+                                    <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                            </div>
+                            <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop" class="w-full h-full object-cover opacity-60" alt="AI Abstract Art">
+                        </div>
+
+                        <h2 class="text-3xl md:text-4xl font-bold mb-6 font-serif">Welcome to Module 11</h2>
+                        <p class="text-lg text-textMuted mb-6 leading-relaxed">
+                            In our previous module on regression, we looked at binary choices: <em>Is this email spam or not?</em> But the real world is rarely that simple.
+                        </p>
+                        <p class="text-lg text-textMuted mb-8 leading-relaxed">
+                            What if we need to classify an image as a cat, a dog, or a bird? This is <strong>Multiclass Classification</strong>. In this lesson, we will explore the sophisticated models data scientists use to make these complex decisions.
+                        </p>
+
+                        <div class="bg-cardBg p-6 rounded-lg border-l-4 border-accent mb-8">
+                            <h3 class="text-accent font-bold uppercase text-xs tracking-widest mb-2">Key Takeaway</h3>
+                            <p class="text-white italic">"We are moving from simple 'Yes/No' predictions to complex pattern recognition using Decision Trees, Ensembles, and Neural Networks."</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Advanced Classification Models",
+                html: `
+                    <div class="fade-in" style="animation-delay: 0.1s">
+                        <h2 class="text-3xl font-bold mb-2 font-serif">Decision Trees</h2>
+                        <p class="text-textMuted mb-8">Intuitive models that mimic human logic, like a "Choose Your Own Adventure" book.</p>
+
+                        <!-- Interactive Process Block -->
+                        <div class="bg-sidebarBg rounded-xl overflow-hidden mb-12 border border-slate-700">
+                            <div class="p-4 bg-slate-900 border-b border-slate-700 flex justify-between items-center">
+                                <span class="font-bold text-sm text-accent">Example: The Umbrella Decision</span>
+                                <div class="flex gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                    <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                </div>
+                            </div>
+                            <div class="p-8 flex flex-col items-center text-center">
+                                <div id="process-step-content" class="min-h-[120px] flex flex-col items-center justify-center">
+                                    <!-- Content injected by JS -->
+                                </div>
+                                <div class="flex gap-2 mt-6">
+                                    <button onclick="setProcessStep(0)" class="process-dot w-3 h-3 rounded-full bg-accent"></button>
+                                    <button onclick="setProcessStep(1)" class="process-dot w-3 h-3 rounded-full bg-slate-600"></button>
+                                    <button onclick="setProcessStep(2)" class="process-dot w-3 h-3 rounded-full bg-slate-600"></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h2 class="text-3xl font-bold mb-6 font-serif">Interactive Terminology</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                            <!-- Flashcard 1 -->
+                            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                                <div class="flip-card-inner">
+                                    <div class="flip-card-front">
+                                        <div>
+                                            <div class="text-accent text-4xl mb-2">🌲 + 🌲</div>
+                                            <h3 class="font-bold text-xl">Random Forests</h3>
+                                            <p class="text-xs text-textMuted mt-2 uppercase tracking-widest">Click to Flip</p>
+                                        </div>
+                                    </div>
+                                    <div class="flip-card-back">
+                                        <div>
+                                            <p class="font-bold">An Ensemble Method</p>
+                                            <p class="text-sm mt-2">Averages the results of multiple decision trees to reduce errors and bias.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Flashcard 2 -->
+                            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                                <div class="flip-card-inner">
+                                    <div class="flip-card-front">
+                                        <div>
+                                            <div class="text-accent text-4xl mb-2">📍</div>
+                                            <h3 class="font-bold text-xl">K-Nearest Neighbors</h3>
+                                            <p class="text-xs text-textMuted mt-2 uppercase tracking-widest">Click to Flip</p>
+                                        </div>
+                                    </div>
+                                    <div class="flip-card-back">
+                                        <div>
+                                            <p class="font-bold">"Birds of a feather"</p>
+                                            <p class="text-sm mt-2">Classifies a data point based on the majority class of its closest neighbors.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Foundations of Machine Learning",
+                html: `
+                    <div class="fade-in" style="animation-delay: 0.1s">
+                        <h2 class="text-3xl font-bold mb-6 font-serif">Supervised vs. Unsupervised</h2>
+                        <p class="text-textMuted mb-8">The fundamental distinction in ML is whether the data has labels (answers) or not.</p>
+
+                        <!-- Tabs Interaction -->
+                        <div class="bg-sidebarBg rounded-xl border border-slate-700 overflow-hidden mb-12">
+                            <div class="flex border-b border-slate-700">
+                                <button onclick="switchTab('supervised')" id="tab-btn-supervised" class="flex-1 py-4 text-sm font-bold text-accent border-b-2 border-accent bg-slate-800/50">Supervised Learning</button>
+                                <button onclick="switchTab('unsupervised')" id="tab-btn-unsupervised" class="flex-1 py-4 text-sm font-bold text-textMuted hover:text-white transition">Unsupervised Learning</button>
+                            </div>
+                            <div class="p-8 min-h-[200px]">
+                                <div id="tab-content-supervised">
+                                    <h3 class="text-xl font-bold mb-2 text-white">"We have the Answer Key"</h3>
+                                    <p class="text-textMuted mb-4">The algorithm is trained on <strong>labeled data</strong>. It knows the input (features) and the correct output (target).</p>
+                                    <ul class="list-disc list-inside text-sm text-slate-300 space-y-1">
+                                        <li>Linear Regression (Predicting Price)</li>
+                                        <li>Classification (Spam vs. Ham)</li>
+                                        <li>Image Recognition</li>
+                                    </ul>
+                                </div>
+                                <div id="tab-content-unsupervised" class="hidden">
+                                    <h3 class="text-xl font-bold mb-2 text-white">"Finding Hidden Patterns"</h3>
+                                    <p class="text-textMuted mb-4">The algorithm scans <strong>unlabeled data</strong>. There is no right answer provided; it must find structure on its own.</p>
+                                    <ul class="list-disc list-inside text-sm text-slate-300 space-y-1">
+                                        <li>Clustering (Customer Segmentation)</li>
+                                        <li>Anomaly Detection (Fraud Prevention)</li>
+                                        <li>Association (Recommendation Engines)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sorting Activity -->
+                        <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 mb-8">
+                            <h3 class="text-accent font-bold uppercase text-xs tracking-widest mb-4">Sorting Activity: Match the Model</h3>
+                            <p class="text-sm text-textMuted mb-6">Drag each item to the correct category (Supervised or Unsupervised).</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Drop Zones -->
+                                <div id="zone-supervised" class="sort-target border-2 border-dashed border-slate-600 rounded-lg p-4 min-h-[200px]" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+                                    <h4 class="text-center font-bold text-textMuted mb-2 pointer-events-none">Supervised Learning</h4>
+                                    <!-- Dropped items go here -->
+                                </div>
+                                <div id="zone-unsupervised" class="sort-target border-2 border-dashed border-slate-600 rounded-lg p-4 min-h-[200px]" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+                                    <h4 class="text-center font-bold text-textMuted mb-2 pointer-events-none">Unsupervised Learning</h4>
+                                    <!-- Dropped items go here -->
+                                </div>
+                            </div>
+
+                            <!-- Draggable Items Pool -->
+                            <div id="sort-pool" class="mt-6 flex flex-wrap gap-3 justify-center min-h-[60px]">
+                                <!-- JS injects items here -->
+                            </div>
+                            
+                            <div id="sort-feedback" class="mt-4 text-center font-bold hidden"></div>
+                        </div>
+
+                    </div>
+                `
+            },
+            {
+                title: "Data Science Ethics",
+                html: `
+                    <div class="fade-in" style="animation-delay: 0.1s">
+                        <h2 class="text-3xl font-bold mb-6 font-serif">Ethical Considerations in AI</h2>
+                        <p class="text-textMuted mb-8">As AI systems become more powerful, understanding their ethical implications is crucial. Explore the key pillars of ethical AI below.</p>
+
+                        <!-- Click and Reveal Activity -->
+                        <div class="bg-sidebarBg rounded-xl border border-slate-700 p-6 mb-12 shadow-lg">
+                            <h3 class="text-accent font-bold uppercase text-xs tracking-widest mb-6">Click and Reveal: Key Ethical Pillars</h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 min-h-[300px]">
+                                <!-- Buttons Column -->
+                                <div class="flex flex-col gap-3">
+                                    ${revealData.map((item, index) => `
+                                        <button onclick="showRevealContent(${index})" id="reveal-btn-${index}" class="reveal-btn ${index === 0 ? 'active' : ''} flex items-center gap-3">
+                                            <span class="text-xl">${item.icon}</span>
+                                            <span class="font-semibold">${item.title}</span>
+                                        </button>
+                                    `).join('')}
+                                </div>
+
+                                <!-- Content Column -->
+                                <div class="md:col-span-2 bg-darkBg rounded-lg border border-slate-700 p-8 flex items-center relative overflow-hidden">
+                                    <!-- Background Pattern -->
+                                    <div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image: radial-gradient(#06b6d4 1px, transparent 1px); background-size: 20px 20px;"></div>
+                                    
+                                    <!-- Dynamic Content Container -->
+                                    <div id="reveal-display" class="relative z-10 w-full">
+                                        <!-- Default Content (Index 0) -->
+                                        <div class="reveal-content active fade-in">
+                                            <div class="w-16 h-16 bg-accent/20 text-accent rounded-full flex items-center justify-center text-3xl mb-6 mx-auto">
+                                                ${revealData[0].icon}
+                                            </div>
+                                            <h4 class="text-2xl font-bold text-white mb-4 text-center">${revealData[0].title}</h4>
+                                            <p class="text-textMuted text-lg leading-relaxed text-center">${revealData[0].content}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hotspot Activity -->
+                        <div class="bg-sidebarBg rounded-xl border border-slate-700 p-6 mb-12 shadow-lg">
+                            <h3 class="text-accent font-bold uppercase text-xs tracking-widest mb-6">Image Hotspots: Anatomy of a Neural Network</h3>
+                            
+                            <div class="hotspot-container">
+                                <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop" alt="Neural Network Abstract" class="hotspot-img">
+                                
+                                <!-- Hotspot Markers -->
+                                ${hotspotData.map((spot, i) => `
+                                    <div class="hotspot-marker" style="top: ${spot.top}; left: ${spot.left};" onclick="toggleHotspot(${i})">
+                                        ${i + 1}
+                                    </div>
+                                `).join('')}
+
+                                <!-- Popover Content -->
+                                <div id="hotspot-popover" class="hotspot-modal">
+                                    <button onclick="closeHotspot()" class="hotspot-close">✕</button>
+                                    <h4 id="hotspot-title" class="text-xl font-bold text-accent mb-2"></h4>
+                                    <p id="hotspot-text" class="text-sm text-textMuted leading-relaxed"></p>
+                                </div>
+                            </div>
+                            <p class="text-center text-xs text-textMuted mt-4">Click the numbered markers to explore the diagram.</p>
+                        </div>
+
+                    </div>
+                `
+            },
+            {
+                title: "Summary & Review",
+                html: `
+                    <div class="fade-in">
+                        <h2 class="text-3xl font-bold mb-6 font-serif">Module Complete!</h2>
+                        <p class="text-textMuted mb-8">You have explored the foundations of machine learning classification, core paradigms, and ethical considerations.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+                            <div class="bg-cardBg p-6 rounded-lg border-t-4 border-accent">
+                                <h4 class="font-bold mb-2">Logic</h4>
+                                <p class="text-xs text-textMuted">Decision Trees offer interpretable "if-then" paths.</p>
+                            </div>
+                            <div class="bg-cardBg p-6 rounded-lg border-t-4 border-purple-500">
+                                <h4 class="font-bold mb-2">Similarity</h4>
+                                <p class="text-xs text-textMuted">KNN groups data based on nearness to neighbors.</p>
+                            </div>
+                            <div class="bg-cardBg p-6 rounded-lg border-t-4 border-green-500">
+                                <h4 class="font-bold mb-2">Ethics</h4>
+                                <p class="text-xs text-textMuted">Understanding bias, privacy, and accountability in AI.</p>
+                            </div>
+                        </div>
+
+                        <div class="text-center p-8 bg-sidebarBg rounded-xl border border-slate-700">
+                            <p class="mb-6 text-lg">Ready for the next step? Apply these concepts in the Python Lab.</p>
+                            <button class="bg-white text-darkBg font-bold py-3 px-8 rounded-full hover:bg-slate-200 transition shadow-lg">
+                                Return to Canvas Dashboard
+                            </button>
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        // --- State Management ---
+        let currentLesson = 0;
+
+        // --- Process Block Data ---
+        const processSteps = [
+            { title: "1. The Forecast", text: "Does the weather forecast call for rain? If YES, check for an umbrella." },
+            { title: "2. The Search", text: "Is the umbrella accessible? If YES, take it. If NO, look for a backup." },
+            { title: "3. The Decision", text: "If you found an umbrella, you stay dry. If not, you risk getting wet." }
+        ];
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLesson(0);
+        });
+
+        // --- Functions ---
+        function loadLesson(index) {
+            currentLesson = index;
+            
+            // Render Content
+            const stage = document.getElementById('lesson-content');
+            stage.innerHTML = lessons[index].html;
+            
+            // Scroll to top
+            document.getElementById('content-stage').scrollTop = 0;
+
+            // Update Nav UI
+            document.querySelectorAll('.nav-item').forEach((el, i) => {
+                if (i === index) el.classList.add('active');
+                else el.classList.remove('active');
+            });
+
+            // Update Footer Buttons
+            const prevBtn = document.getElementById('btn-prev');
+            const nextBtn = document.getElementById('btn-next');
+            
+            if (index === 0) {
+                prevBtn.disabled = true;
+                prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                prevBtn.disabled = false;
+                prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            if (index === lessons.length - 1) {
+                nextBtn.innerHTML = "Finish Module ✓";
+                nextBtn.onclick = () => alert("Module Complete!");
+            } else {
+                nextBtn.innerHTML = "Next Lesson →";
+                nextBtn.onclick = nextLesson;
+            }
+
+            // Update Progress Bar
+            const progress = Math.round(((index + 1) / lessons.length) * 100);
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-text').innerText = `${progress}%`;
+
+            // Initialize specific interactives if present
+            if (index === 1) setProcessStep(0);
+            if (index === 2) initSortingActivity();
+            if (index === 3) showRevealContent(0); // Initialize reveal with first item active
+        }
+
+        function nextLesson() {
+            if (currentLesson < lessons.length - 1) {
+                loadLesson(currentLesson + 1);
+            }
+        }
+
+        function prevLesson() {
+            if (currentLesson > 0) {
+                loadLesson(currentLesson - 1);
+            }
+        }
+
+        // --- Interaction Logic: Process Block ---
+        function setProcessStep(stepIndex) {
+            const container = document.getElementById('process-step-content');
+            if (!container) return;
+            
+            const step = processSteps[stepIndex];
+            container.innerHTML = `
+                <h3 class="text-xl font-bold text-accent mb-2 fade-in">${step.title}</h3>
+                <p class="text-lg text-white fade-in">${step.text}</p>
+            `;
+
+            // Update dots
+            document.querySelectorAll('.process-dot').forEach((dot, i) => {
+                if (i === stepIndex) dot.classList.replace('bg-slate-600', 'bg-accent');
+                else dot.classList.replace('bg-accent', 'bg-slate-600');
+            });
+        }
+
+        // --- Interaction Logic: Tabs ---
+        function switchTab(tabId) {
+            const supContent = document.getElementById('tab-content-supervised');
+            const unsupContent = document.getElementById('tab-content-unsupervised');
+            const supBtn = document.getElementById('tab-btn-supervised');
+            const unsupBtn = document.getElementById('tab-btn-unsupervised');
+
+            if (tabId === 'supervised') {
+                supContent.classList.remove('hidden');
+                unsupContent.classList.add('hidden');
+                
+                supBtn.classList.add('text-accent', 'border-b-2', 'border-accent', 'bg-slate-800/50');
+                supBtn.classList.remove('text-textMuted');
+                
+                unsupBtn.classList.remove('text-accent', 'border-b-2', 'border-accent', 'bg-slate-800/50');
+                unsupBtn.classList.add('text-textMuted');
+            } else {
+                supContent.classList.add('hidden');
+                unsupContent.classList.remove('hidden');
+
+                unsupBtn.classList.add('text-accent', 'border-b-2', 'border-accent', 'bg-slate-800/50');
+                unsupBtn.classList.remove('text-textMuted');
+
+                supBtn.classList.remove('text-accent', 'border-b-2', 'border-accent', 'bg-slate-800/50');
+                supBtn.classList.add('text-textMuted');
+            }
+        }
+
+        // --- Interaction Logic: Sorting Activity ---
+        function initSortingActivity() {
+            const pool = document.getElementById('sort-pool');
+            if (!pool) return;
+            
+            pool.innerHTML = ''; // Clear
+            // Shuffle items
+            const shuffled = [...sortItems].sort(() => Math.random() - 0.5);
+            
+            shuffled.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'sort-item bg-cardBg border border-slate-600 rounded px-4 py-2 text-sm shadow-sm hover:bg-slate-600';
+                el.draggable = true;
+                el.innerText = item.text;
+                el.id = `drag-${item.id}`;
+                el.dataset.category = item.category;
+                el.ondragstart = drag;
+                pool.appendChild(el);
+            });
+        }
+
+        function allowDrop(ev) { ev.preventDefault(); }
+        function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+        function dragEnter(ev) { ev.target.closest('.sort-target').classList.add('drag-over'); }
+        function dragLeave(ev) { ev.target.closest('.sort-target').classList.remove('drag-over'); }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const targetZone = ev.target.closest('.sort-target');
+            targetZone.classList.remove('drag-over');
+            
+            const data = ev.dataTransfer.getData("text");
+            const draggedEl = document.getElementById(data);
+            
+            // Check Logic
+            const correctCategory = draggedEl.dataset.category;
+            const zoneId = targetZone.id; // zone-supervised or zone-unsupervised
+            
+            if (zoneId.includes(correctCategory)) {
+                // Correct
+                targetZone.appendChild(draggedEl);
+                draggedEl.draggable = false;
+                draggedEl.classList.remove('bg-cardBg', 'border-slate-600');
+                draggedEl.classList.add('bg-emerald-900', 'border-emerald-500', 'text-emerald-100');
+                draggedEl.innerHTML += ' ✓';
+                checkSortCompletion();
+            } else {
+                // Incorrect animation
+                draggedEl.classList.add('animate-pulse', 'bg-red-900');
+                setTimeout(() => {
+                    draggedEl.classList.remove('animate-pulse', 'bg-red-900');
+                }, 500);
+            }
+        }
+
+        function checkSortCompletion() {
+            const remaining = document.getElementById('sort-pool').children.length;
+            if (remaining === 0) {
+                const feedback = document.getElementById('sort-feedback');
+                feedback.innerHTML = "<span class='text-emerald-400 text-xl'>🎉 Great job! All items sorted correctly.</span>";
+                feedback.classList.remove('hidden');
+                feedback.classList.add('fade-in');
+            }
+        }
+
+        // --- Interaction Logic: Click and Reveal ---
+        function showRevealContent(index) {
+            const display = document.getElementById('reveal-display');
+            if(!display) return;
+
+            const item = revealData[index];
+            
+            // Update Buttons
+            document.querySelectorAll('.reveal-btn').forEach((btn, i) => {
+                if(i === index) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Update Content with Fade Effect
+            display.innerHTML = `
+                <div class="reveal-content fade-in">
+                    <div class="w-16 h-16 bg-accent/20 text-accent rounded-full flex items-center justify-center text-3xl mb-6 mx-auto">
+                        ${item.icon}
+                    </div>
+                    <h4 class="text-2xl font-bold text-white mb-4 text-center">${item.title}</h4>
+                    <p class="text-textMuted text-lg leading-relaxed text-center">${item.content}</p>
+                </div>
+            `;
+        }
+
+        // --- Interaction Logic: Hotspots ---
+        function toggleHotspot(index) {
+            const modal = document.getElementById('hotspot-popover');
+            const title = document.getElementById('hotspot-title');
+            const text = document.getElementById('hotspot-text');
+            
+            if (!modal.classList.contains('active') || title.innerText !== hotspotData[index].title) {
+                // Show/Update Content
+                title.innerText = hotspotData[index].title;
+                text.innerText = hotspotData[index].text;
+                modal.classList.add('active');
+            } else {
+                // Already open and clicked same marker -> Close
+                modal.classList.remove('active');
+            }
+        }
+
+        function closeHotspot() {
+            document.getElementById('hotspot-popover').classList.remove('active');
+        }
+
+    </script>
+</body>
+</html>

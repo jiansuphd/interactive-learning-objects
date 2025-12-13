@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chinese Cuisine Map Interaction</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Lato', 'Open Sans', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Main Container imitating the Rise Block */
+        .interactive-container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        /* Header / Instructions */
+        .header {
+            padding: 20px;
+            text-align: center;
+            background: #fff;
+        }
+        .instruction-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #555;
+            font-style: italic;
+            line-height: 1.5;
+        }
+
+        /* The Stage (Dark Area) */
+        .stage {
+            position: relative;
+            width: 100%;
+            background-color: #4a4a4a; /* Fallback color */
+            background-image: url('https://images.unsplash.com/photo-1530255315018-c2443254d80c?q=80&w=2892&auto=format&fit=crop'); /* Placeholder texture */
+            background-size: cover;
+            background-position: center;
+            aspect-ratio: 16 / 9; /* Maintains aspect ratio */
+            overflow: hidden;
+        }
+
+        /* Map Image Layer */
+        .map-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Ensures map is visible without stretching */
+            opacity: 0.4; /* Dimmed to make buttons pop, increase if using real map */
+        }
+
+        /* Interactive Elements Layer */
+        .interact-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+
+        /* Buttons/Hotspots Common Styles */
+        .hotspot-btn {
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+            font-family: 'Brush Script MT', cursive; /* Handwriting style match */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        .hotspot-btn:hover {
+            transform: scale(1.1);
+            filter: brightness(1.2);
+        }
+        .hotspot-btn:focus {
+            outline: 2px solid #fff;
+        }
+
+        /* Specific Button Styles */
+        .btn-intro {
+            top: 20%;
+            left: 15%;
+            background: linear-gradient(135deg, #D9304F, #A02038);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-family: 'Lato', sans-serif; /* Standard font for Intro */
+            font-weight: bold;
+            font-size: 1.2rem;
+            border: 2px solid white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        /* Region Labels (simulating the yellow/white text buttons) */
+        /* Positions are approximate percentages based on the screenshot */
+        .btn-region {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+            background: none;
+            border: none;
+            padding: 5px;
+        }
+        .btn-region.visited {
+            color: #ccc; /* Visual cue for visited state */
+        }
+
+        #btn-sichuan { top: 55%; left: 42%; color: #fff; background-color: rgba(160, 32, 56, 0.8); padding: 5px 10px; border-radius: 4px; }
+        #btn-hunan   { top: 65%; left: 55%; color: #fff; background-color: rgba(160, 32, 56, 0.8); padding: 5px 10px; border-radius: 4px; }
+        #btn-shandong{ top: 35%; left: 65%; color: #F4C430; text-shadow: 2px 2px 0px #5e1b1b;}
+        #btn-jiangsu { top: 45%; left: 70%; color: #F4C430; text-shadow: 2px 2px 0px #5e1b1b;}
+        #btn-anhui   { top: 50%; left: 65%; color: #fff; text-shadow: 2px 2px 0px #5e1b1b;}
+        #btn-zhejiang{ top: 55%; left: 72%; color: #F4C430; text-shadow: 2px 2px 0px #5e1b1b;}
+        #btn-fujian  { top: 65%; left: 68%; color: #F4C430; text-shadow: 2px 2px 0px #5e1b1b;}
+        #btn-guangdong{ top: 75%; left: 60%; color: #F4C430; text-shadow: 2px 2px 0px #5e1b1b;}
+
+        /* Bottom Player Bar */
+        .player-bar {
+            height: 50px;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            color: white;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+        .control-icon {
+            width: 20px;
+            height: 20px;
+            fill: #888;
+            cursor: pointer;
+        }
+        .control-icon:hover { fill: white; }
+        
+        .btn-submit {
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-submit:hover { color: white; }
+        .btn-submit.active { color: #fff; font-weight: bold; }
+
+        /* Modal / Info Box */
+        .info-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none; /* Hidden by default */
+            z-index: 100;
+        }
+        .info-modal h2 { margin-top: 0; color: #A02038; }
+        .close-modal {
+            margin-top: 20px;
+            padding: 8px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 600px) {
+            .btn-region { font-size: 1rem; }
+            .btn-intro { font-size: 0.9rem; padding: 8px 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="interactive-container">
+    
+    <!-- Header -->
+    <div class="header">
+        <div class="instruction-text">
+            To learn more, select <span style="font-style:normal; font-weight:800;">Introduction</span>, and then select each cuisine region. When finished, select <span style="font-style:normal; font-weight:800;">SUBMIT</span>:
+        </div>
+    </div>
+
+    <!-- Main Interaction Area -->
+    <div class="stage">
+        <!-- Background Map Placeholder: Replace src with your actual map image -->
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Map_of_PRC_provinces_names_blank.svg/1091px-Map_of_PRC_provinces_names_blank.svg.png" alt="Map of China" class="map-layer">
+        
+        <!-- Overlay Buttons -->
+        <div class="interact-layer">
+            
+            <button class="hotspot-btn btn-intro" onclick="openModal('Introduction', 'Welcome to Chinese 491! In this lesson, we will explore the 8 Great Traditions of Chinese Cuisine. Click the regions on the map to learn about their unique flavor profiles.')">
+                Introduction
+            </button>
+
+            <button id="btn-sichuan" class="hotspot-btn btn-region" onclick="openModal('Sichuan', 'Sichuan cuisine is known for its bold flavors, particularly the pungency and spiciness resulting from liberal use of garlic and chili peppers, as well as the unique flavor of Sichuan pepper.')">
+                Sichuan
+            </button>
+
+            <button id="btn-hunan" class="hotspot-btn btn-region" onclick="openModal('Hunan', 'Hunan cuisine, also known as Xiang cuisine, consists of the cuisines of the Xiang River region, Dongting Lake, and western Hunan Province. It is known for its hot and spicy flavors, fresh aroma, and deep colors.')">
+                Hunan
+            </button>
+
+            <button id="btn-shandong" class="hotspot-btn btn-region" onclick="openModal('Shandong', 'Shandong cuisine (Lu cuisine) is derived from the native cooking style of Shandong Province. It features seafood, clear broths, and utilizes quick-frying techniques.')">
+                Shandong
+            </button>
+
+            <button id="btn-jiangsu" class="hotspot-btn btn-region" onclick="openModal('Jiangsu', 'Jiangsu cuisine, also known as Su cuisine, is one of the Eight Culinary Traditions of China. It is derived from the native cooking styles of the Jiangsu region.')">
+                Jiangsu
+            </button>
+
+            <button id="btn-anhui" class="hotspot-btn btn-region" onclick="openModal('Anhui', 'Anhui cuisine represents the cooking style of the Huangshan Mountains region in China. It is known for its use of wild herbs and braising/stewing techniques.')">
+                Anhui
+            </button>
+
+            <button id="btn-zhejiang" class="hotspot-btn btn-region" onclick="openModal('Zhejiang', 'Zhejiang cuisine derives from the native cooking styles of the Zhejiang region. The food is not greasy, having a fresh and soft flavor with a mellow fragrance.')">
+                Zhejiang
+            </button>
+
+            <button id="btn-fujian" class="hotspot-btn btn-region" onclick="openModal('Fujian', 'Fujian cuisine is known to be light but flavorful, soft, and tender, with particular emphasis on umami taste, known in Chinese cooking as xian.')">
+                Fujian
+            </button>
+
+            <button id="btn-guangdong" class="hotspot-btn btn-region" onclick="openModal('Guangdong', 'Guangdong (Cantonese) cuisine comes from Guangdong Province and is one of the Eight Culinary Traditions of Chinese cuisine. It is prominent worldwide.')">
+                Guangdong
+            </button>
+
+             <!-- Decorative Title in Bottom Right -->
+             <div style="position:absolute; bottom:20px; right:20px; color:white; font-family:'Brush Script MT', cursive; font-size: 2rem; opacity: 0.8;">
+                Chinese 491
+            </div>
+
+        </div>
+
+        <!-- Pop-up Modal -->
+        <div id="infoModal" class="info-modal" role="dialog" aria-modal="true">
+            <h2 id="modalTitle">Title</h2>
+            <p id="modalContent">Content goes here.</p>
+            <button class="close-modal" onclick="closeModal()">Close</button>
+        </div>
+
+    </div>
+
+    <!-- Bottom Player Bar -->
+    <div class="player-bar">
+        <div class="controls">
+            <!-- Play Icon -->
+            <svg class="control-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <!-- Replay Icon -->
+            <svg class="control-icon" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+            <!-- Volume Icon -->
+            <svg class="control-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+        </div>
+        
+        <button class="btn-submit" id="submitBtn" onclick="checkCompletion()">
+            SUBMIT &#10003;
+        </button>
+    </div>
+
+</div>
+
+<script>
+    // Track visited regions
+    let visited = new Set();
+    const totalRegions = 9; // Intro + 8 regions
+
+    function openModal(title, content) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalContent').innerText = content;
+        document.getElementById('infoModal').style.display = 'block';
+        
+        // Add to visited list
+        visited.add(title);
+        
+        // Optional: Change button style to show visited state
+        // (Logic can be added here if we had unique IDs for all buttons in a map)
+        
+        checkCompletionStatus();
+    }
+
+    function closeModal() {
+        document.getElementById('infoModal').style.display = 'none';
+    }
+
+    function checkCompletionStatus() {
+        // Simple check: if user visited a few items, enable submit
+        // In a real app, we'd check if visited.size === totalRegions
+        if (visited.size > 0) {
+           const btn = document.getElementById('submitBtn');
+           btn.classList.add('active');
+           btn.style.color = '#fff';
+        }
+    }
+
+    function checkCompletion() {
+        if (visited.size >= 1) { // Threshold for demo
+            alert("Great job! You have reviewed the cuisine regions.");
+        } else {
+            alert("Please explore the Introduction and Regions before submitting.");
+        }
+    }
+</script>
+
+</body>
+</html>

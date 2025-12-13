@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Course Development Map - DATA 202</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Custom styles for professional, academic look */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Light background */
+            color: #343a40;
+        }
+        .container-wrapper {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            font-family: 'Roboto Slab', serif;
+        }
+        h1 {
+            color: #d9534f; /* University Red/Orange Header */
+            border-bottom: 2px solid #f0ad4e; /* Orange accent divider */
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        .form-group label {
+            font-weight: 600;
+            color: #495057;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            border-color: #5cb85c; /* Green focus highlight */
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(92, 184, 92, 0.25);
+        }
+        .module-entry {
+            background-color: #e9ecef; /* Light gray for module separation */
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 5px solid #5cb85c; /* Green accent */
+        }
+        .module-entry h4 {
+            color: #5cb85c;
+            font-size: 1.25rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #adb5bd;
+            padding-bottom: 5px;
+        }
+        .cl-objective-box {
+            background-color: #f8f9fa;
+            border: 1px dashed #adb5bd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .cl-objective-box textarea {
+            min-height: 100px;
+        }
+
+        /* --- Custom Feedback Styles --- */
+        .feedback-box {
+            background-color: #ffeccf; /* Light Orange/Warning */
+            border-left: 4px solid #f0ad4e; /* Darker Orange */
+            color: #8a6d3b; /* Dark text */
+            padding: 10px;
+            border-radius: 0 4px 4px 0;
+            margin-top: 5px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+        }
+        .feedback-box i {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-wrapper">
+    <h1 style="text-align: center;">Course Development Map: DATA 202</h1>
+    <p style="text-align: center; color: #5cb85c; font-weight: 600; margin-bottom: 30px;">Interactive Planning Tool for Subject Matter Experts</p>
+
+    <!-- 1. COURSE INFORMATION -->
+    <h2 class="text-xl font-bold mb-4" id="course-info">
+        <i class="fas fa-book-open mr-2 text-primary"></i> Course Logistics
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div class="form-group">
+            <label for="course-name">Course Name</label>
+            <input type="text" id="course-name" value="Data Management and Visualization" readonly>
+        </div>
+        <div class="form-group">
+            <label for="sme-name">Subject Matter Expert (SME)</label>
+            <input type="text" id="sme-name" placeholder="Enter SME Name" value="Candice Adams">
+        </div>
+        <div class="form-group">
+            <label for="launch-term">Target Launch Term</label>
+            <input type="text" id="launch-term" value="Spring 2026" readonly>
+        </div>
+        <div class="form-group">
+            <label for="id-name">Instructional Designer (ID)</label>
+            <input type="text" id="id-name" placeholder="Enter ID Name" value="Mary Alice">
+        </div>
+        <div class="form-group">
+            <label for="modality">Modality</label>
+            <input type="text" id="modality" value="Fully Online - Asynchronous" readonly>
+        </div>
+        <div class="form-group md:col-span-2">
+            <label for="development-goals">Development Goals / Vision</label>
+            <textarea id="development-goals" rows="3">Complete all 12 modules. Interactive course with video lectures using Articulate 360 (or HTML/JS where feasible).</textarea>
+        </div>
+    </div>
+    
+    <!-- 2. COURSE SUMMARY (Read-Only) -->
+    <h2 class="text-xl font-bold mb-4 mt-8">
+        <i class="fas fa-file-alt mr-2 text-primary"></i> Course Summary (Read-Only)
+    </h2>
+    <div class="bg-gray-100 p-4 rounded-md mb-8 text-sm">
+        Introduction to foundational concepts and techniques in the management and presentation of data for effective data-informed decision making. Explores data storage and indexing strategies, data warehousing, metadata management, visualization of time-series and geospatial data, and best practices for presenting data to inform decision making.
+    </div>
+
+    <!-- 3. ASSESSMENT, FEEDBACK, AND LEARNING ACTIVITIES MATRIX -->
+    <h2 class="text-xl font-bold mb-4 mt-8" id="assessment-matrix">
+        <i class="fas fa-clipboard-list mr-2 text-primary"></i> Module Planning Matrix (Backward Design)
+    </h2>
+
+    <p class="text-sm italic mb-4">Please detail the specific activities and resources needed for each key module objective. The CLOs are locked to ensure alignment.</p>
+
+    <div id="module-container">
+        <!-- Module 1 -->
+        <div class="module-entry" data-module="1">
+            <h4>Module 1: Introduction to Data Science</h4>
+            <!-- Objective 1 -->
+            <div class="cl-objective-box">
+                <label for="m1o1-assessment">CLO 1: Describe the role of data science and the data science lifecycle.</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                    <div class="form-group">
+                        <label>Assessment</label>
+                        <textarea id="m1o1-assessment" rows="2" class="cl-assessment-input" placeholder="e.g., Module 1 Quiz; Intro Discussion Post">Module 1 Quiz, Intro Discussion Post</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Learning Activities / Strategy</label>
+                        <textarea id="m1o1-activities" rows="2" class="cl-activity-input" placeholder="e.g., Watch lecture, Participate in discussion">Watch module lecture video, Participate in discussion on use cases</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Instructional Materials</label>
+                        <textarea id="m1o1-materials" rows="2" placeholder="e.g., Module Overview page, Lecture Video/Canvas Page">Module Overview page, Module 1 Lecture (Canvas Page), Instructor Zoom Session I</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Technology Tools</label>
+                        <textarea id="m1o1-tech" rows="2" placeholder="e.g., Canvas LMS, Zoom, Embedded graphics">Canvas LMS, Zoom, Embedded graphics</textarea>
+                    </div>
+                </div>
+            </div>
+            <!-- Objective 2 -->
+            <div class="cl-objective-box mt-4">
+                <label for="m1o2-assessment">CLO 6 (Vol Core QR): Begin connecting course concepts to real-world decision-making.</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                     <div class="form-group">
+                        <label>Assessment</label>
+                        <textarea id="m1o2-assessment" rows="2" class="cl-assessment-input" placeholder="e.g., Zoom small-group activity (synchronous) - Discussion">Zoom small-group activity, Asynchronous follow-up discussion</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Learning Activities / Strategy</label>
+                        <textarea id="m1o2-activities" rows="2" class="cl-activity-input" placeholder="e.g., Synchronous discussion: data questions from real fields">Synchronous discussion on real-world data questions (e.g., healthcare, business)</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Instructional Materials</label>
+                        <textarea id="m1o2-materials" rows="2" placeholder="e.g., Zoom Session I, Canvas Discussion board">Zoom Session I, Canvas Discussion board, Sample use case prompts provided by instructor</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Technology Tools</label>
+                        <textarea id="m1o2-tech" rows="2" placeholder="e.g., Zoom, Canvas Discussion">Zoom, Canvas Discussion, Google Slides (if used for real-world examples)</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module 3 (Example of a later technical module) -->
+        <div class="module-entry" data-module="3">
+            <h4>Module 3: Python Basics for Data Science</h4>
+            <!-- Objective 1 -->
+            <div class="cl-objective-box">
+                <label for="m3o1-assessment">CLO 1: Construct basic programs using control structures (conditionals and loops).</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                    <div class="form-group">
+                        <label>Assessment</label>
+                        <textarea id="m3o1-assessment" rows="2" class="cl-assessment-input" placeholder="e.g., Quiz (if/else, for/while syntax) - Lab assignment tasks">Quiz (if/else, for/while syntax), Lab assignment tasks using control flow</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Learning Activities / Strategy</label>
+                        <textarea id="m3o1-activities" rows="2" class="cl-activity-input" placeholder="e.g., Guided coding tasks with if/else logic and iteration">Guided coding tasks with if/else logic and iteration (e.g., filtering mortality data)</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Instructional Materials</label>
+                        <textarea id="m3o1-materials" rows="2" placeholder="e.g., In-page examples and syntax templates - Lab walkthrough instructions">In-page examples and syntax templates, Lab walkthrough instructions with public health use case</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Technology Tools</label>
+                        <textarea id="m3o1-tech" rows="2" placeholder="e.g., Jupyter, Pandas, Canvas">Jupyter, Pandas, Canvas</textarea>
+                    </div>
+                </div>
+            </div>
+            <!-- Objective 2 -->
+            <div class="cl-objective-box mt-4">
+                <label for="m3o2-assessment">CLO 1: Define and apply functions to organize code and perform repeated tasks.</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                     <div class="form-group">
+                        <label>Assessment</label>
+                        <textarea id="m3o2-assessment" rows="2" class="cl-assessment-input" placeholder="e.g., Quiz questions on function syntax - Lab function: get_agegroup_stats()">Quiz questions on function syntax, Lab function: get_agegroup_stats()</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Learning Activities / Strategy</label>
+                        <textarea id="m3o2-activities" rows="2" class="cl-activity-input" placeholder="e.g., Write reusable Python functions - Peer discussion on functions for reuse">Write reusable Python functions to summarize data, Peer discussion on functions for reuse and collaboration</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Instructional Materials</label>
+                        <textarea id="m3o2-materials" rows="2" placeholder="e.g., Module lecture content with function examples">Module lecture content with real-world function examples (e.g., BMI calculator)</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Technology Tools</label>
+                        <textarea id="m3o2-tech" rows="2" placeholder="e.g., Jupyter Notebook, Canvas">Jupyter Notebook, Canvas</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- 4. SAVE AND EXPORT -->
+    <h2 class="text-xl font-bold mb-4 mt-8" id="export-tool">
+        <i class="fas fa-save mr-2 text-primary"></i> Save and Export Plan
+    </h2>
+
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded-r-md">
+        <p class="font-bold">Important Note on Saving:</p>
+        <p class="text-sm">Since this is a simple Canvas-embedded tool, changes are temporary. **Please click 'Export to Text' to save your input** to a file that can be sent to the Instructional Designer.</p>
+    </div>
+
+    <button onclick="exportToText()" class="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition shadow-md">
+        <i class="fas fa-download mr-2"></i> Export Plan to Text File
+    </button>
+    <textarea id="output-data" rows="10" class="mt-4 hidden w-full text-sm font-mono"></textarea>
+
+    <!-- SCRIPTS -->
+    <script>
+        // Non-measurable verbs based on Bloom's Taxonomy weak language
+        const weakVerbs = ['understand', 'know', 'learn', 'appreciate', 'familiarize', 'be able to', 'be aware of', 'grasp'];
+
+        /**
+         * Checks the objective text for non-measurable verbs and displays a feedback message.
+         * @param {HTMLElement} textarea The textarea element being checked.
+         * @param {string} objectiveId The ID of the objective label for reference.
+         */
+        function checkBlooms(textarea, objectiveId) {
+            const text = textarea.value.trim().toLowerCase();
+            const parent = textarea.closest('.cl-objective-box');
+            let feedbackEl = parent.querySelector('.blooms-feedback');
+
+            // Find the first word (the verb)
+            const firstWord = text.split(/\s+/)[0];
+
+            if (weakVerbs.includes(firstWord)) {
+                // If feedback element doesn't exist, create it
+                if (!feedbackEl) {
+                    feedbackEl = document.createElement('div');
+                    feedbackEl.className = 'blooms-feedback feedback-box';
+                    feedbackEl.innerHTML = `
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span class="feedback-text">
+                            **Warning:** Avoid using the verb "${firstWord}". Instructional design best practice suggests using 
+                            measurable verbs (e.g., Apply, Analyze, Create, Evaluate).
+                        </span>
+                        <button onclick="this.parentNode.remove()" style="margin-left: auto; background: none; border: none; color: #8a6d3b; cursor: pointer; font-size: 1.1rem;">&times;</button>
+                    `;
+                    // Insert the feedback element right after the objective label
+                    parent.querySelector('label').after(feedbackEl);
+                }
+            } else {
+                // Remove feedback if the verb is corrected
+                if (feedbackEl) {
+                    feedbackEl.remove();
+                }
+            }
+        }
+
+        /**
+         * Attaches the checkBlooms function to all objective textareas on page load.
+         * Note: Since the CLOs are locked/read-only in this version, we will attach this 
+         * check to the ASSESSMENT and ACTIVITY textareas to check for vague assessment language.
+         */
+        function attachBloomsListeners() {
+            // Target the Assessment and Learning Activities textareas in the matrix
+            const inputFields = document.querySelectorAll('.cl-assessment-input, .cl-activity-input');
+            
+            inputFields.forEach((textarea, index) => {
+                // We'll pass the textarea itself and a unique ID for context
+                textarea.addEventListener('blur', () => {
+                    checkBlooms(textarea, `objective-${index}`);
+                });
+            });
+        }
+
+        function exportToText() {
+            const outputDataElement = document.getElementById('output-data');
+            const data = {};
+
+            // 1. Collect Course Logistics
+            data['Course Logistics'] = {
+                'Course Name': document.getElementById('course-name').value,
+                'SME Name': document.getElementById('sme-name').value,
+                'ID Name': document.getElementById('id-name').value,
+                'Launch Term': document.getElementById('launch-term').value,
+                'Modality': document.getElementById('modality').value,
+                'Development Goals': document.getElementById('development-goals').value
+            };
+
+            // 2. Collect Module Planning Matrix (CLOs and Activities)
+            data['Module Planning Matrix'] = [];
+            const moduleEntries = document.querySelectorAll('.module-entry');
+
+            moduleEntries.forEach(moduleEl => {
+                const moduleNumber = moduleEl.getAttribute('data-module');
+                const moduleTitle = moduleEl.querySelector('h4').innerText.trim();
+                
+                const modulePlan = {
+                    'Module': moduleTitle,
+                    'Objectives': []
+                };
+
+                const objectiveBoxes = moduleEl.querySelectorAll('.cl-objective-box');
+                objectiveBoxes.forEach(box => {
+                    // Extract Objective Text (which is currently read-only label)
+                    const objectiveLabel = box.querySelector('label');
+                    const objectiveText = objectiveLabel ? objectiveLabel.innerText.trim() : 'Unknown Objective';
+                    
+                    const objectiveData = {
+                        'Objective': objectiveText,
+                        'Details': {}
+                    };
+
+                    const textareas = box.querySelectorAll('textarea');
+                    
+                    // We need to map textareas correctly here since we didn't use unique IDs in the HTML,
+                    // but they follow the order: Assessment, Activity, Materials, Tech
+                    const keys = ['Assessment', 'Learning Activities / Strategy', 'Instructional Materials', 'Technology Tools'];
+                    textareas.forEach((textarea, index) => {
+                        if (keys[index]) {
+                            objectiveData.Details[keys[index]] = textarea.value.trim();
+                        }
+                    });
+
+                    modulePlan.Objectives.push(objectiveData);
+                });
+                
+                data['Module Planning Matrix'].push(modulePlan);
+            });
+
+            // Format data into a readable plain text/markdown string
+            let output = "--- Course Development Map Data ---\n\n";
+            
+            // Format Logistics
+            output += "## 1. Course Logistics\n";
+            for (const [key, value] of Object.entries(data['Course Logistics'])) {
+                output += `- **${key}**: ${value}\n`;
+            }
+            output += "\n";
+
+            // Format Matrix
+            output += "## 2. Module Planning Matrix\n\n";
+            data['Module Planning Matrix'].forEach(modulePlan => {
+                output += `### ${modulePlan.Module}\n`;
+                modulePlan.Objectives.forEach(obj => {
+                    output += `#### Objective: ${obj.Objective}\n`;
+                    for (const [key, value] of Object.entries(obj.Details)) {
+                        output += `- **${key}**: ${value}\n`;
+                    }
+                    output += "\n";
+                });
+            });
+
+            // Display and alert user
+            outputDataElement.value = output;
+            outputDataElement.classList.remove('hidden');
+            outputDataElement.select(); // Selects the text for easy copying
+            document.execCommand('copy'); // Copies to clipboard
+            
+            // NOTE: Using a custom message instead of browser alert for Canvas compatibility
+            // Since alert() is forbidden, we rely on the final download message and visual copy confirmation.
+            // alert("Course Plan exported to text field below and copied to your clipboard. Please save this text and send it to the Instructional Designer.");
+        }
+        
+        // Initialize listeners on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', attachBloomsListeners);
+    </script>
+</div>
+</body>
+</html>

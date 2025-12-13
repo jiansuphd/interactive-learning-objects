@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HBS 514: Data & Design Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Theme: UTK / HBS 514 Colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        hbsGrey: '#58595b', // Primary Dark Grey
+                        hbsOrange: '#ff8200', // Accent Orange
+                        hbsOrangeLight: '#ff9a33',
+                        canvas: '#f3f4f6', // Light grey background
+                        card: '#ffffff'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Georgia', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Chart Container Styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+        }
+        
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Custom Range Slider for 'Design' section */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #ff8200;
+            cursor: pointer;
+            margin-top: -10px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #ddd;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-canvas text-gray-800 font-sans h-screen flex overflow-hidden">
+
+    <!-- Navigation Sidebar (Desktop) -->
+    <aside class="w-64 bg-hbsGrey text-white flex flex-col shadow-xl z-20 hidden md:flex">
+        <div class="p-6 border-b border-white/10 text-center">
+            <div class="text-4xl mb-3">📊</div>
+            <h1 class="text-lg font-bold text-hbsOrange tracking-wide">Data & Design Lab</h1>
+            <p class="text-xs text-white/60 mt-1">HBS 514 Sandbox</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="navigate('lobby')" id="nav-lobby" class="nav-item w-full text-left px-4 py-3 rounded hover:bg-white/10 transition active bg-white/10 border-l-4 border-hbsOrange">
+                1. The Lobby
+            </button>
+            <button onclick="navigate('regression')" id="nav-regression" class="nav-item w-full text-left px-4 py-3 rounded hover:bg-white/10 transition border-l-4 border-transparent">
+                2. Regression Sim
+            </button>
+            <button onclick="navigate('design')" id="nav-design" class="nav-item w-full text-left px-4 py-3 rounded hover:bg-white/10 transition border-l-4 border-transparent">
+                3. The Polish Toggle
+            </button>
+            <button onclick="navigate('chooser')" id="nav-chooser" class="nav-item w-full text-left px-4 py-3 rounded hover:bg-white/10 transition border-l-4 border-transparent">
+                4. Chart Chooser
+            </button>
+        </nav>
+        <div class="p-4 text-xs text-center text-white/40">
+            Policy Communication & Visualization
+        </div>
+    </aside>
+
+    <!-- Mobile Header -->
+    <div class="md:hidden fixed w-full bg-hbsGrey text-white z-30 px-4 py-3 flex justify-between items-center shadow-md">
+        <span class="font-bold text-hbsOrange">📊 HBS 514 Lab</span>
+        <button onclick="toggleMenu()" class="text-white border border-white/50 rounded px-2">☰</button>
+    </div>
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-0 bg-hbsGrey z-20 hidden flex-col pt-16 px-4 gap-2 md:hidden text-white">
+        <button onclick="navigate('lobby'); toggleMenu()" class="p-4 border-b border-white/10 text-left">1. The Lobby</button>
+        <button onclick="navigate('regression'); toggleMenu()" class="p-4 border-b border-white/10 text-left">2. Regression Sim</button>
+        <button onclick="navigate('design'); toggleMenu()" class="p-4 border-b border-white/10 text-left">3. The Polish Toggle</button>
+        <button onclick="navigate('chooser'); toggleMenu()" class="p-4 border-b border-white/10 text-left">4. Chart Chooser</button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-8 pt-20 md:pt-8 relative">
+
+        <!-- SECTION 1: THE LOBBY -->
+        <section id="view-lobby" class="max-w-4xl mx-auto fade-in">
+            <header class="text-center mb-10 mt-8">
+                <h2 class="text-4xl font-bold text-hbsGrey mb-4">Welcome to the Visualization Lab</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    In HBS 514, we bridge the gap between raw statistics and policy impact. 
+                    Use this interactive sandbox to explore <span class="text-hbsOrange font-bold">regression lines</span>, test <span class="text-hbsOrange font-bold">design principles</span>, and select the right <span class="text-hbsOrange font-bold">visual story</span>.
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-hbsOrange text-center hover:shadow-lg transition cursor-pointer" onclick="navigate('regression')">
+                    <div class="text-4xl mb-3">📈</div>
+                    <h3 class="font-bold text-lg mb-2">Regression Dynamics</h3>
+                    <p class="text-sm text-gray-500">Click to add data points and watch the "Line of Best Fit" adjust in real-time. See how outliers pull the trend.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-gray-400 text-center hover:shadow-lg transition cursor-pointer" onclick="navigate('design')">
+                    <div class="text-4xl mb-3">✨</div>
+                    <h3 class="font-bold text-lg mb-2">Design Polish</h3>
+                    <p class="text-sm text-gray-500">Experience the power of decluttering. Toggle between "Raw Stata" and "Policy Professional" visuals.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-gray-800 text-center hover:shadow-lg transition cursor-pointer" onclick="navigate('chooser')">
+                    <div class="text-4xl mb-3">🧭</div>
+                    <h3 class="font-bold text-lg mb-2">Chart Chooser</h3>
+                    <p class="text-sm text-gray-500">Struggling to pick a graph? Use this decision tool to match your data to the best visualization.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: REGRESSION SIMULATOR -->
+        <section id="view-regression" class="max-w-6xl mx-auto hidden fade-in">
+            <header class="mb-6 border-b border-gray-200 pb-4 flex justify-between items-end">
+                <div>
+                    <h2 class="text-3xl font-bold text-hbsGrey">Interactive Regression</h2>
+                    <p class="text-gray-600 mt-1">Click anywhere on the chart to add a "County" or "District". Watch how the regression line (<i>y = mx + b</i>) adapts instantly.</p>
+                </div>
+                <button onclick="resetRegression()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm font-bold transition">Reset Data</button>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Stats Panel -->
+                <div class="lg:col-span-1 space-y-4">
+                    <div class="bg-white p-5 rounded-lg shadow-md border-l-4 border-hbsOrange">
+                        <h4 class="text-xs uppercase tracking-widest text-gray-400 font-bold">Observation Count (N)</h4>
+                        <div class="text-3xl font-bold text-hbsGrey" id="reg-n">0</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-lg shadow-md border-l-4 border-blue-500">
+                        <h4 class="text-xs uppercase tracking-widest text-gray-400 font-bold">Slope (Coefficient)</h4>
+                        <div class="text-3xl font-bold text-blue-600" id="reg-slope">0.00</div>
+                        <div class="text-xs text-gray-400 mt-1">A positive slope means variables move together.</div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg text-sm text-blue-900">
+                        <strong>Try this:</strong> Create a neat line of dots, then add one single dot far away in the corner. Watch how much that one "outlier" bends the line!
+                    </div>
+                </div>
+
+                <!-- The Chart -->
+                <div class="lg:col-span-3 bg-white p-2 rounded-xl shadow-md border border-gray-200">
+                    <div class="chart-container">
+                        <canvas id="regressionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: DESIGN POLISH -->
+        <section id="view-design" class="max-w-4xl mx-auto hidden fade-in">
+            <header class="mb-8 text-center">
+                <h2 class="text-3xl font-bold text-hbsGrey">From Raw to Polished</h2>
+                <p class="text-gray-600">Drag the slider to clean up the "Default Stata Output". Notice how clarity improves as we remove clutter.</p>
+            </header>
+
+            <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                <!-- Slider Control -->
+                <div class="mb-8 px-4">
+                    <div class="flex justify-between text-sm font-bold text-gray-400 mb-2">
+                        <span>Raw Data</span>
+                        <span>Polished Insight</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="0" class="w-full" id="polish-slider" oninput="updateDesign(this.value)">
+                </div>
+
+                <!-- Visualization Canvas Area -->
+                <div class="relative h-80 w-full border rounded-lg overflow-hidden bg-white" id="design-canvas">
+                    <!-- We will simulate the chart changes via CSS classes managed by JS -->
+                    <div id="chart-wrapper" class="absolute inset-0 flex items-center justify-center transition-all duration-500 p-8">
+                        <!-- This is a simulated DOM-based chart for demonstration -->
+                        <div class="w-full h-full flex flex-col relative">
+                            <h3 id="chart-title" class="text-center font-bold mb-2 transition-all text-blue-800 underline text-xl">graph_output_v1.png</h3>
+                            
+                            <div class="flex-1 flex relative border-l-2 border-b-2 border-black p-4">
+                                <!-- Gridlines (Fade out) -->
+                                <div id="grid-lines" class="absolute inset-0" style="background-image: linear-gradient(#e5e7eb 1px, transparent 1px), linear-gradient(90deg, #e5e7eb 1px, transparent 1px); background-size: 20px 20px;"></div>
+                                
+                                <!-- Bars -->
+                                <div class="flex-1 flex items-end justify-around z-10 gap-2">
+                                    <div class="w-1/5 bg-blue-700 h-3/4 transition-all duration-500 bar-item relative group">
+                                        <span class="bar-label absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold opacity-0 transition-opacity">75%</span>
+                                    </div>
+                                    <div class="w-1/5 bg-blue-700 h-1/2 transition-all duration-500 bar-item relative group">
+                                        <span class="bar-label absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold opacity-0 transition-opacity">50%</span>
+                                    </div>
+                                    <div class="w-1/5 bg-blue-700 h-5/6 transition-all duration-500 bar-item relative group">
+                                        <span class="bar-label absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold opacity-0 transition-opacity">82%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Axis Labels -->
+                            <div id="x-axis" class="flex justify-around px-4 mt-1 text-xs font-mono">
+                                <span>var1</span><span>var2</span><span>var3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Commentary Box -->
+                <div class="mt-6 p-4 bg-gray-50 rounded border border-l-4 border-gray-300" id="design-commentary">
+                    <strong>Stage 1:</strong> Default Stata output. Blue background, heavy gridlines, cryptic variable names. Hard to read.
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: CHART CHOOSER -->
+        <section id="view-chooser" class="max-w-5xl mx-auto hidden fade-in">
+            <header class="mb-6 border-b border-gray-200 pb-4">
+                <h2 class="text-3xl font-bold text-hbsGrey">The Chart Chooser</h2>
+                <p class="text-gray-600">What relationship are you trying to show? Select a goal to see the recommended visualization.</p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Menu -->
+                <div class="space-y-2">
+                    <button onclick="showChartType('comparison')" class="w-full text-left p-3 rounded border hover:bg-hbsOrange hover:text-white hover:border-hbsOrange transition font-bold text-gray-600 active-chart-btn" id="btn-comparison">Comparison</button>
+                    <button onclick="showChartType('trend')" class="w-full text-left p-3 rounded border hover:bg-hbsOrange hover:text-white hover:border-hbsOrange transition font-bold text-gray-600" id="btn-trend">Trend over Time</button>
+                    <button onclick="showChartType('correlation')" class="w-full text-left p-3 rounded border hover:bg-hbsOrange hover:text-white hover:border-hbsOrange transition font-bold text-gray-600" id="btn-correlation">Correlation</button>
+                    <button onclick="showChartType('distribution')" class="w-full text-left p-3 rounded border hover:bg-hbsOrange hover:text-white hover:border-hbsOrange transition font-bold text-gray-600" id="btn-distribution">Distribution</button>
+                </div>
+
+                <!-- Display Area -->
+                <div class="md:col-span-3 bg-white p-6 rounded-xl shadow-md border border-gray-200 min-h-[300px] flex flex-col justify-center items-center text-center" id="chart-display">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- Navigation Logic ---
+        function navigate(viewId) {
+            document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById('view-' + viewId);
+            target.classList.remove('hidden');
+            target.classList.remove('fade-in');
+            void target.offsetWidth; // trigger reflow
+            target.classList.add('fade-in');
+
+            // Sidebar Styles
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-white/10', 'border-hbsOrange');
+                el.classList.add('border-transparent');
+            });
+            const navBtn = document.getElementById('nav-' + viewId);
+            if(navBtn) {
+                navBtn.classList.add('bg-white/10', 'border-hbsOrange');
+                navBtn.classList.remove('border-transparent');
+            }
+        }
+        function toggleMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        }
+
+        // --- REGRESSION SIMULATOR ---
+        let regChart;
+        let points = [];
+
+        function initRegChart() {
+            const ctx = document.getElementById('regressionChart').getContext('2d');
+            
+            // Click Plugin to add points
+            const clickPlugin = {
+                id: 'clickPlugin',
+                afterEvent: (chart, args) => {
+                    const { event } = args;
+                    if (event.type === 'click') {
+                        const canvasPosition = Chart.helpers.getRelativePosition(event, chart);
+                        const dataX = chart.scales.x.getValueForPixel(canvasPosition.x);
+                        const dataY = chart.scales.y.getValueForPixel(canvasPosition.y);
+                        if(dataX !== null && dataY !== null) {
+                            addPoint(dataX, dataY);
+                        }
+                    }
+                }
+            };
+
+            regChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Observation',
+                            data: [],
+                            backgroundColor: '#58595b',
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: 'Regression Line',
+                            data: [],
+                            type: 'line',
+                            borderColor: '#ff8200',
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { min: 0, max: 100, title: {display:true, text:'Variable X (e.g. Education Spending)'} },
+                        y: { min: 0, max: 100, title: {display:true, text:'Variable Y (e.g. Test Scores)'} }
+                    },
+                    plugins: {
+                        legend: { display: true },
+                        tooltip: { enabled: false } // Disable tooltips to focus on trend
+                    }
+                },
+                plugins: [clickPlugin]
+            });
+        }
+
+        function addPoint(x, y) {
+            // limit range
+            x = Math.max(0, Math.min(100, x));
+            y = Math.max(0, Math.min(100, y));
+            
+            points.push({x, y});
+            updateRegression();
+        }
+
+        function calculateRegression(data) {
+            if (data.length < 2) return null;
+            
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            let n = data.length;
+            
+            data.forEach(p => {
+                sumX += p.x;
+                sumY += p.y;
+                sumXY += (p.x * p.y);
+                sumXX += (p.x * p.x);
+            });
+            
+            let slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            let intercept = (sumY - slope * sumX) / n;
+            
+            return { slope, intercept };
+        }
+
+        function updateRegression() {
+            // Update Points
+            regChart.data.datasets[0].data = points;
+            document.getElementById('reg-n').innerText = points.length;
+
+            // Calculate Line
+            const result = calculateRegression(points);
+            if (result) {
+                const y1 = result.slope * 0 + result.intercept;
+                const y2 = result.slope * 100 + result.intercept;
+                regChart.data.datasets[1].data = [{x:0, y:y1}, {x:100, y:y2}];
+                document.getElementById('reg-slope').innerText = result.slope.toFixed(2);
+            } else {
+                regChart.data.datasets[1].data = [];
+                document.getElementById('reg-slope').innerText = "0.00";
+            }
+            
+            regChart.update();
+        }
+
+        function resetRegression() {
+            points = [];
+            updateRegression();
+        }
+
+        // --- DESIGN POLISH LOGIC ---
+        function updateDesign(val) {
+            const bars = document.querySelectorAll('.bar-item');
+            const labels = document.querySelectorAll('.bar-label');
+            const title = document.getElementById('chart-title');
+            const grid = document.getElementById('grid-lines');
+            const xAxis = document.getElementById('x-axis');
+            const comment = document.getElementById('design-commentary');
+
+            if (val < 30) {
+                // Stage 1: Ugly
+                bars.forEach(b => b.classList.replace('bg-hbsOrange', 'bg-blue-700'));
+                title.innerText = "graph_output_v1.png";
+                title.className = "text-center font-bold mb-2 transition-all text-blue-800 underline text-xl";
+                grid.style.opacity = "1";
+                xAxis.innerHTML = "<span>var1</span><span>var2</span><span>var3</span>";
+                xAxis.className = "flex justify-around px-4 mt-1 text-xs font-mono";
+                comment.innerHTML = "<strong>Stage 1: Raw Output.</strong> Default settings, internal variable names, distracting gridlines. Not ready for a report.";
+                labels.forEach(l => l.style.opacity = "0");
+            } else if (val < 70) {
+                // Stage 2: Cleaned
+                bars.forEach(b => b.classList.replace('bg-blue-700', 'bg-gray-500'));
+                title.innerText = "Average Participation Rates by District";
+                title.className = "text-center font-bold mb-2 transition-all text-gray-700 text-lg";
+                grid.style.opacity = "0.2";
+                xAxis.innerHTML = "<span>North</span><span>Central</span><span>South</span>";
+                xAxis.className = "flex justify-around px-4 mt-1 text-sm font-sans text-gray-600";
+                comment.innerHTML = "<strong>Stage 2: Cleaned.</strong> Better title, meaningful labels, lighter grid. Good for analysis, but dull for presentation.";
+                labels.forEach(l => l.style.opacity = "0");
+            } else {
+                // Stage 3: Polished
+                bars.forEach(b => {
+                    b.classList.remove('bg-blue-700', 'bg-gray-500');
+                    b.classList.add('bg-hbsOrange');
+                });
+                title.innerText = "The South District Leads in Participation";
+                title.className = "text-left font-bold mb-4 transition-all text-gray-900 text-2xl";
+                grid.style.opacity = "0";
+                xAxis.innerHTML = "<span>North</span><span>Central</span><span>South</span>";
+                xAxis.className = "flex justify-around px-4 mt-1 text-base font-bold text-gray-800";
+                comment.innerHTML = "<strong>Stage 3: Policy Ready.</strong> Action title, brand colors (Orange), direct data labels, no clutter. Tells a story instantly.";
+                labels.forEach(l => l.style.opacity = "1");
+            }
+        }
+
+        // --- CHART CHOOSER LOGIC ---
+        const chartInfo = {
+            comparison: {
+                icon: "📊",
+                title: "Bar Chart",
+                desc: "Best for comparing categorical data (e.g., Funding by State). Use horizontal bars if labels are long.",
+                color: "border-hbsOrange bg-orange-50"
+            },
+            trend: {
+                icon: "📈",
+                title: "Line Chart",
+                desc: "Best for continuous data over time (e.g., Unemployment Rate 2010-2020). Highlights trajectory.",
+                color: "border-blue-500 bg-blue-50"
+            },
+            correlation: {
+                icon: "📉",
+                title: "Scatter Plot",
+                desc: "Best for showing the relationship between two numerical variables (e.g., Income vs. Health).",
+                color: "border-purple-500 bg-purple-50"
+            },
+            distribution: {
+                icon: "⛰️",
+                title: "Histogram",
+                desc: "Best for showing the frequency of data within ranges (e.g., Distribution of Test Scores).",
+                color: "border-green-500 bg-green-50"
+            }
+        };
+
+        function showChartType(type) {
+            const info = chartInfo[type];
+            const display = document.getElementById('chart-display');
+            
+            display.innerHTML = `
+                <div class="text-6xl mb-4 animate-bounce">${info.icon}</div>
+                <h3 class="text-2xl font-bold mb-2 text-gray-800">${info.title}</h3>
+                <p class="text-gray-600 max-w-md">${info.desc}</p>
+                <div class="mt-4 px-4 py-2 rounded text-xs uppercase font-bold tracking-wider bg-white border ${info.color}">Recommended</div>
+            `;
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            initRegChart();
+            showChartType('comparison'); // Default
+        });
+
+    </script>
+</body>
+</html>

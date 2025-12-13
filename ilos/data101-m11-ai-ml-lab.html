@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA 101: AI & Machine Learning Lab</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Chosen Palette: Warm Neutrals (Sand/Beige/Slate) with Academic Accents -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        canvas: '#fdfcf8', // Warm off-white
+                        primary: '#334155', // Slate 700
+                        secondary: '#94a3b8', // Slate 400
+                        accent: '#d97706', // Amber 600
+                        soft: '#f5f5f4', // Warm gray 100
+                        surface: '#ffffff',
+                        success: '#10b981',
+                        danger: '#ef4444'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Chart Container Styling Requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px; /* Max width for readability */
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px; /* Base height */
+            max-height: 400px;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+
+        /* Custom Scrollbar for cleaner UI */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        .nav-item.active {
+            background-color: #f3f4f6;
+            border-right: 4px solid #d97706;
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        /* Transition utilities */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-canvas text-primary font-sans h-screen flex overflow-hidden">
+
+    <!-- Application Structure Plan: 
+         Designed as a "Learning Lab" dashboard. 
+         Sidebar navigation allows non-linear exploration of the three main lessons (Classification, Foundations, Evaluation).
+         The main area is a dynamic stage.
+         Structure Plan:
+         1. Concept Hub: High-level definitions and context.
+         2. Classification Lab: Interactive simulations for Decision Trees (Step-by-step) and KNN (Visual Chart).
+         3. Foundations Deck: Visual toggle between Supervised/Unsupervised logic.
+         4. Evaluation: Interactive Matrix.
+         This structure promotes active learning by forcing the user to "operate" the algorithms (e.g., classifying a bird, toggling labels) rather than just reading about them.
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. Decision Tree: Interactive Wizard (HTML/JS). Goal: Show logic flow. No SVG needed.
+         2. KNN: Scatter Plot (Chart.js). Goal: Visualizing "distance" and "neighbors". Interaction: Add data point.
+         3. Supervised/Unsupervised: Scatter Plot (Chart.js). Goal: Show impact of labels. Interaction: Color toggle.
+         4. Confusion Matrix: CSS Grid. Goal: Understanding terminology. Interaction: Hover descriptions.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-surface border-r border-secondary/20 flex flex-col justify-between hidden md:flex shadow-sm z-10">
+        <div>
+            <div class="p-6 border-b border-secondary/10">
+                <h1 class="text-xl font-bold tracking-tight text-accent">DATA 101</h1>
+                <p class="text-xs text-secondary mt-1">AI & ML Learning Lab</p>
+            </div>
+            <nav class="mt-6 flex flex-col gap-1 px-3">
+                <button onclick="navigate('overview')" id="nav-overview" class="nav-item active text-left px-4 py-3 rounded-md text-sm transition-colors hover:bg-soft">
+                    1. Concept Hub
+                </button>
+                <button onclick="navigate('classification')" id="nav-classification" class="nav-item text-left px-4 py-3 rounded-md text-sm transition-colors hover:bg-soft">
+                    2. Classification Lab
+                </button>
+                <button onclick="navigate('foundations')" id="nav-foundations" class="nav-item text-left px-4 py-3 rounded-md text-sm transition-colors hover:bg-soft">
+                    3. ML Foundations
+                </button>
+                <button onclick="navigate('evaluation')" id="nav-evaluation" class="nav-item text-left px-4 py-3 rounded-md text-sm transition-colors hover:bg-soft">
+                    4. Evaluation Station
+                </button>
+            </nav>
+        </div>
+        <div class="p-4 bg-soft/50 text-xs text-secondary text-center">
+            Module 11 Content
+        </div>
+    </aside>
+
+    <!-- Mobile Header -->
+    <div class="md:hidden fixed w-full bg-surface border-b border-secondary/20 z-20 px-4 py-3 flex justify-between items-center">
+        <span class="font-bold text-accent">DATA 101: Module 11</span>
+        <button onclick="toggleMobileMenu()" class="text-primary focus:outline-none font-bold border rounded px-2">☰</button>
+    </div>
+    
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 bg-surface z-10 hidden flex-col pt-16 px-4 gap-2 md:hidden">
+        <button onclick="navigate('overview'); toggleMobileMenu()" class="p-4 border-b text-left">1. Concept Hub</button>
+        <button onclick="navigate('classification'); toggleMobileMenu()" class="p-4 border-b text-left">2. Classification Lab</button>
+        <button onclick="navigate('foundations'); toggleMobileMenu()" class="p-4 border-b text-left">3. ML Foundations</button>
+        <button onclick="navigate('evaluation'); toggleMobileMenu()" class="p-4 border-b text-left">4. Evaluation Station</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto bg-canvas p-4 md:p-8 md:pt-8 pt-20 scroll-smooth relative">
+        
+        <!-- SECTION 1: OVERVIEW / CONCEPT HUB -->
+        <section id="view-overview" class="max-w-4xl mx-auto fade-in">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-primary mb-2">Concept Hub</h2>
+                <p class="text-lg text-secondary leading-relaxed">
+                    Welcome to the AI & Machine Learning Basics module. This section establishes the core vocabulary needed to understand how computers "learn" from data without static programming.
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Video Placeholder Card -->
+                <div class="bg-primary text-surface rounded-xl p-8 flex flex-col justify-center items-center shadow-lg min-h-[250px] relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-accent opacity-10 group-hover:opacity-20 transition-opacity"></div>
+                    <div class="z-10 text-center">
+                        <div class="text-5xl mb-4">▶</div>
+                        <h3 class="text-xl font-bold">Introduction to AI & ML</h3>
+                        <p class="text-sm opacity-80 mt-2">Aubra Anthony introduces Classification</p>
+                    </div>
+                </div>
+
+                <!-- Definition Card -->
+                <div class="bg-surface rounded-xl p-6 shadow-sm border border-secondary/10 flex flex-col justify-center">
+                    <h3 class="text-xl font-bold text-accent mb-4">What is Machine Learning?</h3>
+                    <p class="text-primary leading-relaxed">
+                        Machine Learning (ML) uses algorithms to enable computers to learn from data, identify patterns, and make predictions without being explicitly programmed with static rules.
+                    </p>
+                    <div class="mt-6 p-4 bg-soft rounded-lg border-l-4 border-accent">
+                        <p class="text-sm font-semibold">Key Takeaway:</p>
+                        <p class="text-xs text-secondary mt-1">We move from "Commanding" (Do X, then Y) to "Teaching" (Here is data, find the pattern).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transition Prompt -->
+            <div class="bg-surface rounded-lg p-6 border border-secondary/20">
+                <h4 class="font-bold mb-2">Beyond "Yes or No"</h4>
+                <p class="text-sm text-secondary mb-4">
+                    We previously studied Logistic Regression for binary choices (Spam vs. Not Spam). But what if the world is more complex? 
+                </p>
+                <button onclick="navigate('classification')" class="bg-primary text-white px-6 py-2 rounded-full hover:bg-accent transition-colors shadow-md text-sm">
+                    Enter Classification Lab &rarr;
+                </button>
+            </div>
+        </section>
+
+
+        <!-- SECTION 2: CLASSIFICATION LAB -->
+        <section id="view-classification" class="max-w-5xl mx-auto hidden fade-in">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-primary mb-2">Classification Lab</h2>
+                <p class="text-secondary mb-6">
+                    Explore advanced methods for categorizing data. Unlike simple regression, these models handle multi-class problems (e.g., Cat vs. Dog vs. Bird). Select a tool below to experiment.
+                </p>
+                
+                <!-- Lab Tabs -->
+                <div class="flex flex-wrap gap-2 border-b border-secondary/20 pb-1">
+                    <button onclick="switchTab('tab-tree')" id="btn-tab-tree" class="lab-tab active px-4 py-2 text-sm font-semibold text-accent border-b-2 border-accent">Decision Trees</button>
+                    <button onclick="switchTab('tab-knn')" id="btn-tab-knn" class="lab-tab px-4 py-2 text-sm font-semibold text-secondary hover:text-primary">K-Nearest Neighbors</button>
+                    <button onclick="switchTab('tab-models')" id="btn-tab-models" class="lab-tab px-4 py-2 text-sm font-semibold text-secondary hover:text-primary">Model Library</button>
+                </div>
+            </header>
+
+            <!-- TAB 1: DECISION TREE -->
+            <div id="tab-tree" class="lab-content fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1">
+                        <h3 class="font-bold text-lg mb-2">Logic Simulator: The Umbrella</h3>
+                        <p class="text-sm text-secondary mb-4">Decision Trees work like "Choose Your Own Adventure" books. They split data into branches based on feature values.</p>
+                        <div class="bg-surface p-4 rounded-lg shadow-sm border border-secondary/10 text-sm">
+                            <strong>Why use Trees?</strong>
+                            <ul class="list-disc ml-4 mt-2 space-y-1 text-secondary">
+                                <li>Easy to interpret.</li>
+                                <li>Handles non-linear data well.</li>
+                                <li>Robust to outliers.</li>
+                                <li>Can handle missing values.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Interactive Tree Container -->
+                    <div class="lg:col-span-2 bg-surface rounded-xl shadow-md p-6 border border-secondary/10 flex flex-col items-center justify-center min-h-[300px]">
+                        <div id="tree-stage" class="text-center w-full max-w-md">
+                            <!-- JS injects content here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: KNN VISUALIZER -->
+            <div id="tab-knn" class="lab-content hidden fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1">
+                        <h3 class="font-bold text-lg mb-2">K-Nearest Neighbors (KNN)</h3>
+                        <p class="text-sm text-secondary mb-4">
+                            KNN groups "like with like". It classifies a new data point based on the majority class of its nearest neighbors in the dataset.
+                        </p>
+                        <div class="bg-soft p-4 rounded-lg mb-4">
+                            <h4 class="font-bold text-sm mb-2">Scenario: The Bird Watcher</h4>
+                            <ul class="text-xs space-y-2 text-secondary">
+                                <li><span class="inline-block w-3 h-3 rounded-full bg-yellow-400 mr-1"></span> <strong>Yellow Birds:</strong> "Squawk"</li>
+                                <li><span class="inline-block w-3 h-3 rounded-full bg-red-500 mr-1"></span> <strong>Red Birds:</strong> "Tweet"</li>
+                                <li><span class="inline-block w-3 h-3 rounded-full bg-gray-800 mr-1"></span> <strong>Black Birds:</strong> "Caw"</li>
+                            </ul>
+                        </div>
+                        <button onclick="toggleNewBird()" id="btn-bird" class="w-full py-2 bg-accent text-white rounded-md hover:bg-yellow-600 transition shadow-sm font-semibold text-sm">
+                            Identify Mystery Bird
+                        </button>
+                        <p id="knn-result" class="mt-4 text-center font-bold text-primary hidden">Result: It's a Yellow Squawker!</p>
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <div class="chart-container bg-surface rounded-xl p-2 shadow-md border border-secondary/10">
+                            <canvas id="knnChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: MODEL LIBRARY -->
+            <div id="tab-models" class="lab-content hidden fade-in">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Naive Bayes -->
+                    <div class="bg-surface p-6 rounded-xl shadow-sm border-t-4 border-blue-500">
+                        <h3 class="font-bold text-lg mb-2">Naïve Bayes</h3>
+                        <p class="text-sm text-secondary mb-4">
+                            Based on Bayesian probability. It uses "priors" (prior knowledge) to predict the frequency of patterns in future data.
+                        </p>
+                        <div class="bg-soft p-3 rounded text-xs">
+                            <strong>Use Case:</strong> Spam filtering, Sentiment Analysis. Very fast training.
+                        </div>
+                    </div>
+
+                    <!-- Ensemble Methods -->
+                    <div class="bg-surface p-6 rounded-xl shadow-sm border-t-4 border-green-500">
+                        <h3 class="font-bold text-lg mb-2">Ensemble Methods</h3>
+                        <p class="text-sm text-secondary mb-4">
+                            Combines multiple decision trees to improve accuracy. A single tree is often weak; a forest is strong.
+                        </p>
+                        <div class="space-y-3">
+                            <div class="border-l-2 border-green-300 pl-3">
+                                <h4 class="font-bold text-sm">Random Forest</h4>
+                                <p class="text-xs text-secondary">"Averaging." Builds many trees on random data subsets and averages the result.</p>
+                            </div>
+                            <div class="border-l-2 border-green-600 pl-3">
+                                <h4 class="font-bold text-sm">Gradient Boosted Trees</h4>
+                                <p class="text-xs text-secondary">"Correction." Trees are built sequentially, each fixing the errors of the previous one.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- SECTION 3: ML FOUNDATIONS -->
+        <section id="view-foundations" class="max-w-5xl mx-auto hidden fade-in">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-primary mb-2">Machine Learning Foundations</h2>
+                <p class="text-secondary mb-6">
+                    The fundamental distinction in ML is whether the data has "Labels" (answers) or not. Use the toggle below to visualize the difference on the same dataset.
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 flex flex-col justify-center">
+                    <div class="bg-surface p-6 rounded-xl shadow-md border border-secondary/10">
+                        <h3 class="font-bold text-lg mb-4 text-center">Learning Mode</h3>
+                        
+                        <div class="flex bg-soft p-1 rounded-lg mb-6">
+                            <button onclick="setLearningMode('supervised')" id="btn-sup" class="flex-1 py-2 rounded-md text-sm font-bold bg-white shadow-sm text-primary transition-all">Supervised</button>
+                            <button onclick="setLearningMode('unsupervised')" id="btn-unsup" class="flex-1 py-2 rounded-md text-sm font-bold text-secondary hover:text-primary transition-all">Unsupervised</button>
+                        </div>
+
+                        <div id="desc-sup" class="text-sm text-secondary">
+                            <strong class="text-primary block mb-1">Supervised Learning</strong>
+                            Finding relationships using <span class="text-accent font-bold">Labels</span>.
+                            <br>We have the "answer key".
+                            <ul class="list-disc ml-4 mt-2 text-xs">
+                                <li>Regression</li>
+                                <li>Classification</li>
+                            </ul>
+                        </div>
+                        <div id="desc-unsup" class="text-sm text-secondary hidden">
+                            <strong class="text-primary block mb-1">Unsupervised Learning</strong>
+                            Discovering patterns in <span class="text-accent font-bold">Unlabeled</span> data.
+                            <br>No "answer key".
+                            <ul class="list-disc ml-4 mt-2 text-xs">
+                                <li>Clustering</li>
+                                <li>Anomaly Detection</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2">
+                    <div class="chart-container bg-surface rounded-xl p-2 shadow-md border border-secondary/10">
+                        <canvas id="foundationChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-secondary mt-2">
+                        *In Unsupervised learning, the algorithm must "find" the clusters without color-coded hints.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- SECTION 4: EVALUATION STATION -->
+        <section id="view-evaluation" class="max-w-4xl mx-auto hidden fade-in">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-primary mb-2">Evaluation Station</h2>
+                <p class="text-secondary mb-6">
+                    How do we know if a classification model is working? We use a <strong>Confusion Matrix</strong>. Hover over the quadrants to understand the terminology.
+                </p>
+            </header>
+
+            <div class="bg-surface p-8 rounded-xl shadow-lg border border-secondary/10">
+                <div class="grid grid-cols-2 gap-4 max-w-2xl mx-auto text-center relative">
+                    <!-- Headers -->
+                    <div class="col-start-2 font-bold text-secondary text-sm">Predicted Positive</div>
+                    <div class="col-start-3 font-bold text-secondary text-sm">Predicted Negative</div>
+                    
+                    <!-- Row Labels -->
+                    <div class="row-start-2 font-bold text-secondary text-sm flex items-center justify-end pr-4">Actual Positive</div>
+                    <div class="row-start-3 font-bold text-secondary text-sm flex items-center justify-end pr-4">Actual Negative</div>
+
+                    <!-- Matrix Cells -->
+                    <div onmouseenter="showMatrixInfo('tp')" class="bg-green-100 hover:bg-green-200 border-2 border-green-200 p-6 rounded-lg cursor-pointer transition-colors">
+                        <div class="text-2xl font-bold text-green-800">TP</div>
+                        <div class="text-xs text-green-700">True Positive</div>
+                    </div>
+
+                    <div onmouseenter="showMatrixInfo('fn')" class="bg-red-50 hover:bg-red-100 border-2 border-red-100 p-6 rounded-lg cursor-pointer transition-colors">
+                        <div class="text-2xl font-bold text-red-800">FN</div>
+                        <div class="text-xs text-red-700">False Negative</div>
+                    </div>
+
+                    <div onmouseenter="showMatrixInfo('fp')" class="bg-red-50 hover:bg-red-100 border-2 border-red-100 p-6 rounded-lg cursor-pointer transition-colors">
+                        <div class="text-2xl font-bold text-red-800">FP</div>
+                        <div class="text-xs text-red-700">False Positive</div>
+                    </div>
+
+                    <div onmouseenter="showMatrixInfo('tn')" class="bg-green-100 hover:bg-green-200 border-2 border-green-200 p-6 rounded-lg cursor-pointer transition-colors">
+                        <div class="text-2xl font-bold text-green-800">TN</div>
+                        <div class="text-xs text-green-700">True Negative</div>
+                    </div>
+                </div>
+
+                <!-- Interactive Description Area -->
+                <div id="matrix-desc" class="mt-8 p-4 bg-soft rounded-lg text-center min-h-[100px] flex items-center justify-center">
+                    <p class="text-secondary italic">Hover over a box in the matrix to see its definition.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JS Logic -->
+    <script>
+        // --- Navigation Logic ---
+        function navigate(viewId) {
+            // Hide all views
+            document.querySelectorAll('section').forEach(el => {
+                el.classList.add('hidden');
+            });
+            // Show selected view
+            const selected = document.getElementById('view-' + viewId);
+            selected.classList.remove('hidden');
+            
+            // Re-trigger animations
+            selected.classList.remove('fade-in');
+            void selected.offsetWidth; // trigger reflow
+            selected.classList.add('fade-in');
+
+            // Update Nav State
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const activeNav = document.getElementById('nav-' + viewId);
+            if(activeNav) activeNav.classList.add('active');
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.lab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.lab-tab').forEach(el => {
+                el.classList.remove('active', 'border-b-2', 'border-accent', 'text-accent');
+                el.classList.add('text-secondary');
+            });
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.add('active', 'border-b-2', 'border-accent', 'text-accent');
+            activeBtn.classList.remove('text-secondary');
+        }
+
+        // --- Decision Tree Logic (Umbrella Scenario) ---
+        const treeData = {
+            step1: {
+                text: "Does the weather forecast call for rain?",
+                yes: "step2",
+                no: "step1b"
+            },
+            step1b: {
+                text: "Does it look cloudy outside?",
+                yes: "step2",
+                no: "result_no"
+            },
+            step2: {
+                text: "Do you know where your umbrella is?",
+                yes: "result_yes",
+                no: "step3"
+            },
+            step3: {
+                text: "Does your roommate know where THEIR umbrella is?",
+                yes: "step3b",
+                no: "result_no"
+            },
+            step3b: {
+                text: "Will they let you borrow it?",
+                yes: "result_yes",
+                no: "result_no"
+            }
+        };
+
+        function renderTreeStep(stepId) {
+            const stage = document.getElementById('tree-stage');
+            stage.innerHTML = ''; // Clear
+
+            if (stepId.startsWith('result')) {
+                const isYes = stepId === 'result_yes';
+                stage.innerHTML = `
+                    <div class="animate-bounce text-5xl mb-4">${isYes ? '☔️' : '☀️'}</div>
+                    <h4 class="text-xl font-bold ${isYes ? 'text-accent' : 'text-success'} mb-2">
+                        ${isYes ? 'Bring an Umbrella!' : 'No Umbrella Needed!'}
+                    </h4>
+                    <button onclick="renderTreeStep('step1')" class="mt-4 text-xs text-secondary underline">Start Over</button>
+                `;
+                return;
+            }
+
+            const step = treeData[stepId];
+            stage.innerHTML = `
+                <h4 class="text-lg font-semibold mb-6 text-primary">${step.text}</h4>
+                <div class="flex gap-4 justify-center">
+                    <button onclick="renderTreeStep('${step.yes}')" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition">Yes</button>
+                    <button onclick="renderTreeStep('${step.no}')" class="px-6 py-2 bg-soft text-primary border border-secondary/20 rounded-lg hover:bg-secondary/10 transition">No</button>
+                </div>
+                <div class="mt-8 text-xs text-secondary/50">Current Node: ${stepId}</div>
+            `;
+        }
+
+        // Initialize Tree
+        renderTreeStep('step1');
+
+        // --- Charts Initialization ---
+        let knnChartInstance = null;
+        let foundationChartInstance = null;
+
+        // Data for Charts
+        const birdData = {
+            yellow: [{x: 2, y: 8}, {x: 3, y: 7}, {x: 2.5, y: 7.5}],
+            red: [{x: 6, y: 2}, {x: 7, y: 3}, {x: 6.5, y: 2.5}],
+            black: [{x: 8, y: 8}, {x: 8.5, y: 7.5}, {x: 7.5, y: 8.5}, {x: 8, y: 9}],
+            mystery: [{x: 2.8, y: 7.2}] // Close to Yellow
+        };
+
+        const foundationData = [
+            {x: 10, y: 20, type: 'A'}, {x: 12, y: 22, type: 'A'}, {x: 11, y: 19, type: 'A'},
+            {x: 50, y: 50, type: 'B'}, {x: 52, y: 52, type: 'B'}, {x: 51, y: 48, type: 'B'},
+            {x: 80, y: 20, type: 'C'}, {x: 82, y: 22, type: 'C'}, {x: 81, y: 18, type: 'C'}
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initKNNChart();
+            initFoundationChart();
+        });
+
+        // --- KNN Chart Logic ---
+        function initKNNChart() {
+            const ctx = document.getElementById('knnChart').getContext('2d');
+            knnChartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        { label: 'Yellow (Squawk)', data: birdData.yellow, backgroundColor: '#facc15', pointRadius: 8 },
+                        { label: 'Red (Tweet)', data: birdData.red, backgroundColor: '#ef4444', pointRadius: 8 },
+                        { label: 'Black (Caw)', data: birdData.black, backgroundColor: '#1f2937', pointRadius: 8 },
+                        { 
+                            label: 'Mystery Bird', 
+                            data: [], // Starts empty
+                            backgroundColor: '#d97706', 
+                            borderColor: '#000',
+                            borderWidth: 2,
+                            pointRadius: 10,
+                            pointStyle: 'star'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Bird Sound Distribution' },
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        x: { display: false }, // Abstract conceptual space
+                        y: { display: false }
+                    }
+                }
+            });
+        }
+
+        function toggleNewBird() {
+            const btn = document.getElementById('btn-bird');
+            const result = document.getElementById('knn-result');
+            
+            if (btn.innerText.includes("Identify")) {
+                // Add bird
+                knnChartInstance.data.datasets[3].data = birdData.mystery;
+                knnChartInstance.update();
+                btn.innerText = "Reset Simulation";
+                btn.classList.replace('bg-accent', 'bg-primary');
+                result.classList.remove('hidden');
+                result.classList.add('fade-in');
+            } else {
+                // Remove bird
+                knnChartInstance.data.datasets[3].data = [];
+                knnChartInstance.update();
+                btn.innerText = "Identify Mystery Bird";
+                btn.classList.replace('bg-primary', 'bg-accent');
+                result.classList.add('hidden');
+            }
+        }
+
+        // --- Foundations Chart Logic ---
+        function initFoundationChart() {
+            const ctx = document.getElementById('foundationChart').getContext('2d');
+            foundationChartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Data Points',
+                            data: foundationData,
+                            backgroundColor: (ctx) => {
+                                // Default supervised colors based on type
+                                const val = ctx.raw;
+                                if (!val) return '#94a3b8';
+                                if (val.type === 'A') return '#facc15';
+                                if (val.type === 'B') return '#ef4444';
+                                if (val.type === 'C') return '#1f2937';
+                                return '#94a3b8';
+                            },
+                            pointRadius: 8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Supervised Learning Mode (Labeled)' }
+                    },
+                    scales: { x: { display: false }, y: { display: false } }
+                }
+            });
+        }
+
+        function setLearningMode(mode) {
+            const btnSup = document.getElementById('btn-sup');
+            const btnUnsup = document.getElementById('btn-unsup');
+            const descSup = document.getElementById('desc-sup');
+            const descUnsup = document.getElementById('desc-unsup');
+
+            if (mode === 'supervised') {
+                // UI
+                btnSup.classList.add('bg-white', 'shadow-sm', 'text-primary');
+                btnSup.classList.remove('text-secondary');
+                btnUnsup.classList.remove('bg-white', 'shadow-sm', 'text-primary');
+                btnUnsup.classList.add('text-secondary');
+                
+                descSup.classList.remove('hidden');
+                descUnsup.classList.add('hidden');
+
+                // Chart Update
+                foundationChartInstance.options.plugins.title.text = 'Supervised Learning Mode (Labeled)';
+                foundationChartInstance.data.datasets[0].backgroundColor = (ctx) => {
+                    const val = ctx.raw;
+                    if (!val) return '#94a3b8';
+                    if (val.type === 'A') return '#facc15';
+                    if (val.type === 'B') return '#ef4444';
+                    if (val.type === 'C') return '#1f2937';
+                };
+            } else {
+                // UI
+                btnUnsup.classList.add('bg-white', 'shadow-sm', 'text-primary');
+                btnUnsup.classList.remove('text-secondary');
+                btnSup.classList.remove('bg-white', 'shadow-sm', 'text-primary');
+                btnSup.classList.add('text-secondary');
+
+                descSup.classList.add('hidden');
+                descUnsup.classList.remove('hidden');
+
+                // Chart Update
+                foundationChartInstance.options.plugins.title.text = 'Unsupervised Learning Mode (Patterns only, No Labels)';
+                foundationChartInstance.data.datasets[0].backgroundColor = '#94a3b8'; // All grey
+            }
+            foundationChartInstance.update();
+        }
+
+        // --- Matrix Logic ---
+        const matrixDefs = {
+            tp: "<strong>True Positive:</strong> The model predicted Positive, and it was actually Positive.<br>(e.g., Predicted Rain, and it Rained.)",
+            tn: "<strong>True Negative:</strong> The model predicted Negative, and it was actually Negative.<br>(e.g., Predicted No Rain, and it was Sunny.)",
+            fp: "<strong>False Positive:</strong> The model predicted Positive, but it was actually Negative.<br>(e.g., Predicted Rain, but it was Sunny. Type I Error.)",
+            fn: "<strong>False Negative:</strong> The model predicted Negative, but it was actually Positive.<br>(e.g., Predicted No Rain, but it Rained. Type II Error.)"
+        };
+
+        function showMatrixInfo(key) {
+            const desc = document.getElementById('matrix-desc');
+            desc.innerHTML = `<p class="text-primary text-sm">${matrixDefs[key]}</p>`;
+        }
+
+    </script>
+</body>
+</html>

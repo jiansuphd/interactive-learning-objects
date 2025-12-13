@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Data Science Journey</title>
+    <!-- Fonts matching the style -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* --- RESET & BASE --- */
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; padding: 20px;
+            font-family: 'Lato', sans-serif;
+            background-color: #f0f4f8;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- MAIN CONTAINER --- */
+        .interactive-wrapper {
+            width: 100%;
+            max-width: 1200px; 
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 16 / 9; 
+        }
+
+        /* --- HEADER BAR (New) --- */
+        .top-bar {
+            position: absolute;
+            top: 0; left: 0; width: 100%;
+            background-color: #1e3a8a; /* Dark Blue */
+            color: white;
+            padding: 15px 25px;
+            z-index: 50;
+            font-family: 'Lato', sans-serif;
+            font-weight: 900;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* --- BACKGROUND SCENE --- */
+        .scene {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, #fff5e6 0%, #ffe0b2 40%, #e3f2fd 100%);
+            z-index: 0;
+            overflow: hidden;
+        }
+        
+        /* Clouds */
+        .cloud { position: absolute; background: white; border-radius: 50%; opacity: 0.8; }
+        .c1 { width: 100px; height: 40px; top: 15%; left: 10%; }
+        .c2 { width: 140px; height: 60px; top: 20%; right: 20%; }
+        .c3 { width: 80px; height: 30px; top: 18%; left: 40%; }
+
+        /* The Mountain */
+        .mountain-base {
+            position: absolute;
+            bottom: 0; left: 50%; /* CENTERED */
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 600px solid transparent;
+            border-right: 600px solid transparent;
+            border-bottom: 500px solid #1e3a8a;
+            z-index: 1;
+        }
+        .mountain-mid {
+            position: absolute;
+            bottom: 0; left: 50%; /* CENTERED */
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 550px solid transparent;
+            border-right: 400px solid transparent;
+            border-bottom: 500px solid #3b82f6;
+            opacity: 0.3;
+            z-index: 2;
+        }
+        .snow-cap {
+            position: absolute;
+            top: -140px; left: -168px;
+            width: 0; height: 0;
+            border-left: 170px solid transparent;
+            border-right: 170px solid transparent;
+            border-bottom: 140px solid white;
+            z-index: 3;
+        }
+
+        /* The Path */
+        .path-svg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none;
+        }
+        .trail-line {
+            fill: none; stroke: #fcd34d; stroke-width: 4; stroke-dasharray: 10, 10; opacity: 0.8;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+        }
+
+        /* --- MARKERS --- */
+        .markers-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;
+        }
+        .marker {
+            position: absolute; width: 40px; height: 50px;
+            transform: translate(-50%, -100%); cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .pin-head {
+            width: 36px; height: 36px; background-color: #ef4444; border: 2px solid white;
+            border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); z-index: 2;
+        }
+        .pin-head span { transform: rotate(45deg); color: white; font-weight: bold; font-size: 14px; }
+        .pin-shadow {
+            width: 20px; height: 10px; background: rgba(0,0,0,0.3); border-radius: 50%;
+            margin-top: -5px; transform: scale(0); transition: transform 0.3s;
+        }
+        .marker.locked { filter: grayscale(100%); opacity: 0.6; cursor: not-allowed; }
+        .marker:not(.locked):hover { transform: translate(-50%, -115%) scale(1.1); }
+        .marker.active .pin-head { background-color: #fbbf24; transform: rotate(-45deg) scale(1.2); border-color: #1e3a8a; }
+        .marker.active .pin-shadow { transform: scale(1); }
+        .marker.completed .pin-head { background-color: #10b981; }
+
+        /* Marker Positions (Centered and Shifted Down) */
+        #m0 { left: 50%; top: 90%; }
+        #m1 { left: 55%; top: 76%; }
+        #m2 { left: 62%; top: 62%; }
+        #m3 { left: 52%; top: 48%; }
+        #m4 { left: 58%; top: 35%; }
+        #m5 { left: 50%; top: 22%; }
+
+        .flag {
+            position: absolute; left: 50%; top: 18%; font-size: 40px; color: #1e3a8a;
+            transform: translate(5px, -30px); z-index: 5; filter: drop-shadow(2px 2px 0 rgba(255,255,255,0.5));
+        }
+
+        /* --- PANELS --- */
+        
+        /* Shared Panel Styles */
+        .panel-base {
+            position: absolute;
+            top: 70px; /* Below Top Bar */
+            bottom: 20px;
+            left: 20px;
+            width: 350px;
+            background: rgba(30, 58, 138, 0.95); /* Dark Blue */
+            color: white;
+            padding: 30px;
+            border-radius: 4px;
+            z-index: 20;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column;
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        .panel-base h1, .panel-base h2 {
+            font-family: 'Lato', sans-serif; font-weight: 900; margin: 0 0 15px 0;
+        }
+        .panel-base p { font-size: 0.95rem; line-height: 1.6; margin-bottom: 15px; color: #dbeafe; }
+        
+        /* Welcome Panel (Start) */
+        .panel-welcome { z-index: 30; } /* On top initially */
+        .panel-welcome.hidden { opacity: 0; pointer-events: none; transform: translateX(-20px); }
+        
+        .btn-begin {
+            margin-top: auto;
+            background: #ffe4c4; /* Bisque/Gold */
+            color: #1e3a8a;
+            border: none; padding: 12px 30px;
+            font-weight: 900; font-size: 1.1rem;
+            border-radius: 4px; cursor: pointer;
+            width: fit-content;
+            box-shadow: 0 4px 0 #d1bfa0;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .btn-begin:active { transform: translateY(4px); box-shadow: 0 0 0 #d1bfa0; }
+
+        /* Instructions Panel (Step 2) */
+        .panel-instructions { opacity: 0; pointer-events: none; }
+        .panel-instructions.active { opacity: 1; pointer-events: auto; }
+        .panel-instructions ol { padding-left: 20px; color: #dbeafe; line-height: 1.6; font-size: 0.9rem; }
+        .panel-instructions li { margin-bottom: 10px; }
+
+        .btn-back {
+            background: #ffe4c4; color: #1e3a8a; border: none; padding: 8px 20px;
+            font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase;
+            font-size: 0.9rem; margin-top: auto; width: fit-content;
+        }
+
+        /* Right Content Card (Content) */
+        .content-card {
+            position: absolute; top: 80px; right: 20px; bottom: 20px; width: 350px;
+            background: rgba(30, 58, 138, 0.98); color: white;
+            border-left: 5px solid #fbbf24; padding: 25px;
+            border-radius: 4px; z-index: 25;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow-y: auto;
+        }
+        .content-card.show { transform: translateX(0); }
+        .content-card h2 { margin-top: 0; color: #fbbf24; font-size: 1.4rem; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; margin-bottom: 15px; }
+        .content-card p, .content-card li { font-size: 0.95rem; line-height: 1.6; margin-bottom: 12px; }
+        .content-card ul { padding-left: 20px; }
+        
+        .btn-close {
+            position: absolute; top: 10px; right: 10px; background: none; border: none;
+            font-size: 1.5rem; color: #94a3b8; cursor: pointer;
+        }
+        .btn-close:hover { color: #fbbf24; }
+
+        /* Completion Modal */
+        .modal-success {
+            position: absolute; inset: 0; background: rgba(30, 58, 138, 0.95);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; color: white; text-align: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s;
+        }
+        .modal-success.active { opacity: 1; pointer-events: auto; }
+        .success-icon { font-size: 4rem; color: #fbbf24; margin-bottom: 20px; animation: bounce 1s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+    </style>
+</head>
+<body>
+
+<div class="interactive-wrapper">
+
+    <!-- Top Bar -->
+    <div class="top-bar">Data Science Journey</div>
+
+    <!-- Background Scene -->
+    <div class="scene">
+        <div class="cloud c1"></div>
+        <div class="cloud c2"></div>
+        <div class="cloud c3"></div>
+        <!-- CSS Mountain -->
+        <div class="mountain-base"><div class="snow-cap"></div></div>
+        <div class="mountain-mid"></div>
+        <!-- SVG Path -->
+        <svg class="path-svg" viewBox="0 0 1000 562.5" preserveAspectRatio="none">
+            <!-- Adjusted coordinates to match centered and lowered mountain -->
+            <path class="trail-line" d="M 500,506 Q 520,460 550,427 T 620,348 T 520,270 T 580,196 T 500,123" />
+        </svg>
+    </div>
+
+    <!-- Flag at Summit -->
+    <div class="flag"><i class="fas fa-flag"></i></div>
+
+    <!-- 1. WELCOME PANEL (Start Screen) -->
+    <div id="panelWelcome" class="panel-base panel-welcome">
+        <h1>Welcome!</h1>
+        <p>In this activity, you will explore the steps of the Data Science Cycle using a hike to the summit of a metaphorical mountain.</p>
+        <p>Each stop on the trail map will provide you with important information about each step of the Data Science Journey process so you can see how they fit together.</p>
+        <p>Select the button below to begin.</p>
+        <button class="btn-begin" onclick="beginJourney()">Begin</button>
+    </div>
+
+    <!-- 2. INSTRUCTIONS PANEL (Visible after Begin) -->
+    <div id="panelInstructions" class="panel-base panel-instructions">
+        <h2>The Journey: Part 1</h2>
+        <ol>
+            <li>First you'll follow the steps on the trail to reach the summit of the mountain by taking the most straightforward path. Later you'll see some other routes.</li>
+            <li><strong>Select each marker to progress up the mountain.</strong> Start with Marker 0. Each time you select a marker, information will be provided about that step in the Data Science Journey.</li>
+            <li>Once you have completed the journey up the mountain, a Continue button will appear to advance your journey.</li>
+        </ol>
+        <button class="btn-back" onclick="location.reload()">Back</button>
+    </div>
+
+    <!-- Right Content Card (Dynamic) -->
+    <div id="contentCard" class="content-card">
+        <button class="btn-close" onclick="closeCard()">&times;</button>
+        <h2 id="cardTitle"></h2>
+        <div id="cardBody"></div>
+    </div>
+
+    <!-- Markers -->
+    <div class="markers-container">
+        <!-- Marker 0 -->
+        <div id="m0" class="marker locked" onclick="activateMarker(0)">
+            <div class="pin-head"><span>0</span></div>
+            <div class="pin-shadow"></div>
+        </div>
+        <!-- Markers 1-5 -->
+        <div id="m1" class="marker locked" onclick="activateMarker(1)"><div class="pin-head"><span>1</span></div><div class="pin-shadow"></div></div>
+        <div id="m2" class="marker locked" onclick="activateMarker(2)"><div class="pin-head"><span>2</span></div><div class="pin-shadow"></div></div>
+        <div id="m3" class="marker locked" onclick="activateMarker(3)"><div class="pin-head"><span>3</span></div><div class="pin-shadow"></div></div>
+        <div id="m4" class="marker locked" onclick="activateMarker(4)"><div class="pin-head"><span>4</span></div><div class="pin-shadow"></div></div>
+        <div id="m5" class="marker locked" onclick="activateMarker(5)"><div class="pin-head"><span>5</span></div><div class="pin-shadow"></div></div>
+    </div>
+
+    <!-- Completion Modal -->
+    <div id="completionModal" class="modal-success">
+        <div class="success-icon"><i class="fas fa-crown"></i></div>
+        <h2 class="text-3xl font-bold mb-4">You made it to the summit!</h2>
+        <p class="mb-8 max-w-md">You have explored the full Data Science Journey. Click below to continue.</p>
+        <button class="btn-back" style="font-size: 1.2rem; padding: 15px 40px;" onclick="alert('Proceed to Part 2!')">Continue</button>
+    </div>
+
+</div>
+
+<script>
+    // --- CONTENT DATA ---
+    const stepData = [
+        {
+            title: "0. Problem Framing",
+            content: `
+                <p>Where are you aiming to go on this journey, and how do you plan to get there? A successful trek depends on putting in the appropriate amount of planning and preparation. Framing your data science question is no different.</p>
+                <p>You'll want to think through things like:</p>
+                <ul>
+                    <li>Do you have the tools you'll need to reach the 'end'?</li>
+                    <li>How will you know when you're done?</li>
+                    <li>How far do you want to go before you check in with others?</li>
+                </ul>
+                <p>Having mapped out answers to key questions will help ensure you're able to make the most of the journey.</p>`
+        },
+        {
+            title: "1. Collecting or Gathering Data",
+            content: `
+                <p>Choose what data sources you'll turn to and what kind of data will allow you to move forward.</p>
+                <ul>
+                    <li>Will you rely on qualitative or quantitative data, or both?</li>
+                    <li>What values might you want to capture?</li>
+                    <li>Are those values already in a dataset that you have access to?</li>
+                    <li>Do you need to design an experiment or can you collect observational data?</li>
+                </ul>`
+        },
+        {
+            title: "2. Clean Data",
+            content: `
+                <ul>
+                    <li>Is your data ready to be used?</li>
+                    <li>Are there missing values?</li>
+                    <li>Is the data inconsistently formatted – for example, some place names are capitalized while others are all-lower case?</li>
+                </ul>
+                <p>Think about how you'll need the data to be standardized and what gaps might exist in your data set, and address those issues to arrive at an analysis-ready dataset.</p>`
+        },
+        {
+            title: "3. Explore Data",
+            content: `
+                <p>Jump into the data and get a feel for how well your analysis plan aligns with what you see.</p>
+                <p>This is your first real exposure to 'big picture' patterns that might be present in your data set. This stage lets you see whether there's snow on the peak you're looking to climb or if there are storm clouds in the distance.</p>
+                <p>Exploration opens your eyes to any curious features on the horizon, and it should inform the trail you follow and the tools you use from here.</p>
+                <p>You're beginning the technical part of the trail -- but you can still get back to the car to grab a different pair of hiking boots or an ice axe to help you through tricky sections that might crop up!</p>`
+        },
+        {
+            title: "4. Analyze or Model Data",
+            content: `
+                <p>Now that you have a rough feel for what you can do with your dataset, this is where you really commit to the more technical parts of the trail.</p>
+                <p>You decide if you're going to take one analytical approach or another – for example, do you want to predict a likely outcome based on patterns in your dataset? Or are you wanting to understand a cause-effect relationship between two variables?</p>
+                <p>From here, you choose the trail you'll take to get to the summit, you equip yourself with the necessary tools, and you charge forward!</p>`
+        },
+        {
+            title: "5. Act on Insights or Interpret",
+            content: `
+                <p><strong>You made it to the summit! Congratulations!</strong></p>
+                <p>But wait – you're not finished, in fact, not even close. Now that you're at the peak, you get to decide what to do with all the insight you've gained from being at this elevation! You can decide whether to broadcast what you've found far and wide, or if there are a few key stakeholders that you'll want to share with first.</p>
+                <p>For example, does it look like there's a great lagoon on the other side of the hill, or is there an invading army on the horizon? How you and others interpret and act on those two different insights should be directly linked to the strength of your analysis, and they should reflect how confident you are in your assessment.</p>`
+        }
+    ];
+
+    // --- LOGIC ---
+    let currentProgress = 0; // Highest unlocked step
+    let isJourneyStarted = false;
+
+    function beginJourney() {
+        // Transition: Hide Welcome, Show Instructions, Unlock Marker 0
+        document.getElementById('panelWelcome').classList.add('hidden');
+        document.getElementById('panelInstructions').classList.add('active');
+        
+        // Unlock first marker
+        const m0 = document.getElementById('m0');
+        m0.classList.remove('locked');
+        m0.style.animation = "bounce 1s";
+        setTimeout(() => m0.style.animation = "", 1000);
+        
+        isJourneyStarted = true;
+    }
+
+    function activateMarker(stepIndex) {
+        if (!isJourneyStarted) return; // Prevent clicking if still on welcome screen
+        if (stepIndex > currentProgress) return; // Prevent clicking locked steps
+
+        // 1. Highlight Visuals
+        document.querySelectorAll('.marker').forEach((m, idx) => {
+            m.classList.remove('active');
+            if (idx < currentProgress) m.classList.add('completed');
+        });
+        document.getElementById(`m${stepIndex}`).classList.add('active');
+
+        // 2. Show Content
+        const card = document.getElementById('contentCard');
+        const title = document.getElementById('cardTitle');
+        const body = document.getElementById('cardBody');
+
+        title.innerText = stepData[stepIndex].title;
+        body.innerHTML = stepData[stepIndex].content;
+        card.classList.add('show');
+
+        // 3. Unlock Next Step (if at current max progress)
+        if (stepIndex === currentProgress && currentProgress < 5) {
+            currentProgress++;
+            const nextMarker = document.getElementById(`m${currentProgress}`);
+            nextMarker.classList.remove('locked');
+            
+            // Auto-bounce the new unlocked marker
+            nextMarker.style.animation = "bounce 1s";
+            setTimeout(() => nextMarker.style.animation = "", 1000);
+        } else if (stepIndex === 5) {
+            // End Game Logic
+            setTimeout(() => {
+                document.getElementById('completionModal').classList.add('active');
+            }, 5000);
+        }
+    }
+
+    function closeCard() {
+        document.getElementById('contentCard').classList.remove('show');
+        document.querySelectorAll('.marker').forEach(m => m.classList.remove('active'));
+    }
+
+</script>
+
+</body>
+</html>

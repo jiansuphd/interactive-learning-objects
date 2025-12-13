@@ -1,0 +1,277 @@
+<div class="canvas-checklist-wrapper">
+<style>
+    /* --- CUSTOMIZED CHECKLIST STYLESHEET FOR CANVAS --- */
+    
+    /* 1. Base Container and Typography (Arial/Inter assumed in Canvas) */
+    .canvas-checklist-wrapper {
+        font-family: 'Inter', Arial, sans-serif;
+        padding: 1.5rem 0;
+        max-width: 100%;
+        margin: 0 auto;
+        background-color: #f8f9fa; /* Very light gray background */
+        border-radius: 8px;
+    }
+
+    h2 {
+        color: #1a56c0; /* University Blue Header */
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+        padding: 0 1.5rem;
+    }
+
+    p.description {
+        color: #6c757d;
+        margin-bottom: 2rem;
+        font-size: 1rem;
+        padding: 0 1.5rem;
+    }
+
+    /* 2. Checklist Group Styling */
+    .checklist-group {
+        background-color: #ffffff;
+        border: 1px solid #e9ecef;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .checklist-header {
+        background-color: #1a56c0; /* Blue Header Background */
+        color: white;
+        padding: 1rem 1.5rem;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+
+    .checklist-item {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        transition: background-color 0.15s;
+    }
+
+    .checklist-item:last-child {
+        border-bottom: none;
+    }
+    
+    .checklist-item:hover {
+        background-color: #f1f6ff; /* Light blue hover */
+    }
+
+    /* 3. Custom Checkbox Look */
+    .custom-checkbox {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        width: 100%;
+        user-select: none; /* Prevent text selection on tap */
+    }
+
+    .custom-checkbox input[type="checkbox"] {
+        /* Hide default browser checkbox */
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .checkmark {
+        width: 22px;
+        height: 22px;
+        border: 2px solid #adb5bd;
+        border-radius: 4px;
+        margin-right: 15px;
+        background-color: #ffffff;
+        transition: all 0.2s;
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    /* Checked State Styling */
+    .custom-checkbox input[type="checkbox"]:checked ~ .checkmark {
+        background-color: #10b981; /* Success Green */
+        border-color: #10b981;
+    }
+
+    .custom-checkbox input[type="checkbox"]:checked ~ .checkmark::after {
+        content: '\2713'; /* Checkmark symbol */
+        position: absolute;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        top: -3px;
+        left: 2px;
+    }
+    
+    .custom-checkbox input[type="checkbox"]:checked ~ .checklist-text {
+        color: #6c757d; /* Gray out text when checked */
+        text-decoration: line-through;
+    }
+
+    .checklist-text {
+        color: #343a40;
+        line-height: 1.4;
+    }
+
+    /* 4. Text Input & Button Section */
+    .input-section {
+        padding: 1rem 1.5rem;
+    }
+
+    .input-section label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        color: #343a40;
+    }
+
+    .input-section input[type="email"],
+    .input-section textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 1rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.3rem;
+        box-sizing: border-box;
+        font-size: 1rem;
+        resize: vertical;
+        transition: border-color 0.2s;
+    }
+    
+    .input-section input[type="email"]:focus,
+    .input-section textarea:focus {
+        border-color: #1a56c0; /* Blue focus */
+        box-shadow: 0 0 0 1px #1a56c0;
+        outline: none;
+    }
+
+    .action-button {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background-color: #ffc107; /* Amber/Yellow for action, not red */
+        color: #343a40;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border: none;
+        border-radius: 0.3rem;
+        cursor: not-allowed;
+        text-align: center;
+        text-decoration: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
+
+<h2>Pre-Launch Marketing Checklist</h2>
+<p class="description">Use this interactive list to confirm all assets, channels, and readiness steps are complete before the product launch window opens.</p>
+
+<div class="checklist-group">
+    <div class="checklist-header">Phase 1: Asset Preparation</div>
+    
+    <div class="checklist-item">
+        <label class="custom-checkbox">
+            <input type="checkbox" name="c1" id="c1" onclick="saveChecklist()">
+            <span class="checkmark"></span>
+            <span class="checklist-text">Final product screenshots and videos approved by Legal.</span>
+        </label>
+    </div>
+    
+    <div class="checklist-item">
+        <label class="custom-checkbox">
+            <input type="checkbox" name="c2" id="c2" onclick="saveChecklist()">
+            <span class="checkmark"></span>
+            <span class="checklist-text">Press release draft finalized and embargo details confirmed.</span>
+        </label>
+    </div>
+    
+    <div class="checklist-item">
+        <label class="custom-checkbox">
+            <input type="checkbox" name="c3" id="c3" onclick="saveChecklist()">
+            <span class="checkmark"></span>
+            <span class="checklist-text">Landing page copy optimized for SEO and A/B tested.</span>
+        </label>
+    </div>
+</div>
+
+<div class="checklist-group">
+    <div class="checklist-header">Phase 2: Channel Activation</div>
+    
+    <div class="checklist-item">
+        <label class="custom-checkbox">
+            <input type="checkbox" name="c4" id="c4" onclick="saveChecklist()">
+            <span class="checkmark"></span>
+            <span class="checklist-text">Social media creative assets scheduled for immediate release.</span>
+        </label>
+    </div>
+    
+    <div class="checklist-item">
+        <label class="custom-checkbox">
+            <input type="checkbox" name="c5" id="c5" onclick="saveChecklist()">
+            <span class="checkmark"></span>
+            <span class="checklist-text">Internal training complete for sales and support teams.</span>
+        </label>
+    </div>
+</div>
+
+<!-- Text Area and Email Input -->
+<div class="input-section">
+    <label for="comments">Team Notes / Follow-ups:</label>
+    <textarea id="comments" rows="3" onblur="saveChecklist()" placeholder="Add any outstanding tasks or general comments here..."></textarea>
+    
+    <label for="email">Send Progress Update to (Email Address):</label>
+    <input type="email" id="email" onblur="saveChecklist()" placeholder="manager@example.com">
+    
+    <!-- NOTE: This button is purely visual and non-functional in Rise Embed Block -->
+    <a class="action-button" href="#" title="This feature is non-functional in Canvas.">
+        DOWNLOAD / EMAIL CHECKLIST (Non-Functional)
+    </a>
+</div>
+
+<script>
+    // This script handles persistence of checklist state using local storage, 
+    // which is the simplest way to maintain state in a Canvas content page.
+
+    const CHECKLIST_KEY = 'rise_checklist_state';
+    const CHECKBOX_IDS = ['c1', 'c2', 'c3', 'c4', 'c5'];
+
+    function loadChecklist() {
+        const savedState = JSON.parse(localStorage.getItem(CHECKLIST_KEY));
+
+        if (savedState) {
+            // Load checkbox states
+            CHECKBOX_IDS.forEach(id => {
+                const checkbox = document.getElementById(id);
+                if (checkbox) {
+                    checkbox.checked = savedState.checkboxes[id] || false;
+                }
+            });
+
+            // Load text area and email
+            document.getElementById('comments').value = savedState.comments || '';
+            document.getElementById('email').value = savedState.email || '';
+        }
+    }
+
+    function saveChecklist() {
+        const state = {
+            checkboxes: {},
+            comments: document.getElementById('comments').value,
+            email: document.getElementById('email').value
+        };
+
+        // Collect current state of all checkboxes
+        CHECKBOX_IDS.forEach(id => {
+            const checkbox = document.getElementById(id);
+            if (checkbox) {
+                state.checkboxes[id] = checkbox.checked;
+            }
+        });
+
+        localStorage.setItem(CHECKLIST_KEY, JSON.stringify(state));
+    }
+
+    // Load state immediately when the script runs
+    loadChecklist();
+</script>
+</div>

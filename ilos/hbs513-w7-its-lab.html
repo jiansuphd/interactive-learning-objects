@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HBS 513: ITS Policy Lab (Enhanced)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Annotation Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+    
+    <!-- Design System: Professional Policy Analytics -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        canvas: '#f8fafc', // Light slate background
+                        primary: '#1e293b', // Slate 800
+                        secondary: '#64748b', // Slate 500
+                        accent: '#0f766e', // Teal 700 (Policy/Gov feel)
+                        highlight: '#f59e0b', // Amber for "Interruption"
+                        danger: '#ef4444', // Red for "Threats"
+                        surface: '#ffffff',
+                        soft: '#e2e8f0',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Chart Constraints */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 450px; }
+        }
+
+        /* Sidebar Navigation Styles */
+        .nav-item {
+            border-left: 4px solid transparent;
+            transition: all 0.2s;
+        }
+        .nav-item.active {
+            background-color: #f1f5f9;
+            border-left-color: #0f766e; /* Teal accent */
+            color: #0f766e;
+            font-weight: 700;
+        }
+        .nav-item:hover:not(.active) {
+            background-color: #f8fafc;
+            color: #334155;
+        }
+
+        /* Custom Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #0f766e;
+            cursor: pointer;
+            margin-top: -6px; 
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+
+        /* Transitions */
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Clue Reveal Animation */
+        .reveal { animation: reveal 0.5s ease-in-out forwards; }
+        @keyframes reveal { from { opacity: 0; height: 0; } to { opacity: 1; height: auto; } }
+    </style>
+</head>
+<body class="bg-canvas text-primary font-sans h-screen flex overflow-hidden">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="w-64 bg-surface border-r border-secondary/20 flex-col justify-between hidden md:flex z-20 shadow-sm">
+        <div>
+            <div class="p-6 border-b border-secondary/10">
+                <h1 class="text-2xl font-bold text-primary tracking-tight">HBS 513</h1>
+                <p class="text-xs text-secondary uppercase tracking-wider mt-1">Causal Inference Lab</p>
+            </div>
+            <nav class="mt-6 flex flex-col px-4 gap-2">
+                <button onclick="navigate('intro')" id="nav-intro" class="nav-item active text-left px-4 py-3 rounded-r-md text-sm">
+                    1. Concept: The Interruption
+                </button>
+                <button onclick="navigate('simulator')" id="nav-simulator" class="nav-item text-left px-4 py-3 rounded-r-md text-sm">
+                    2. The Policy Simulator
+                </button>
+                <button onclick="navigate('case')" id="nav-case" class="nav-item text-left px-4 py-3 rounded-r-md text-sm">
+                    3. Case Study: Naloxone
+                </button>
+                <button onclick="navigate('check')" id="nav-check" class="nav-item text-left px-4 py-3 rounded-r-md text-sm">
+                    4. Validity Checklist
+                </button>
+                <div class="my-2 border-t border-secondary/10"></div>
+                <button onclick="navigate('detective')" id="nav-detective" class="nav-item text-left px-4 py-3 rounded-r-md text-sm font-bold text-highlight">
+                    🕵️‍♀️ 5. The Detective
+                </button>
+            </nav>
+        </div>
+        <div class="p-4 text-center border-t border-secondary/10">
+            <p class="text-xs text-secondary">Week 7: Interrupted Time Series</p>
+        </div>
+    </aside>
+
+    <!-- MOBILE HEADER -->
+    <div class="md:hidden fixed w-full bg-surface border-b border-secondary/20 z-30 px-4 py-3 flex justify-between items-center shadow-sm">
+        <span class="font-bold text-accent">HBS 513: ITS Lab</span>
+        <button onclick="toggleMobileMenu()" class="text-primary p-2 border rounded hover:bg-soft">☰</button>
+    </div>
+
+    <!-- MOBILE MENU OVERLAY -->
+    <div id="mobile-menu" class="fixed inset-0 bg-surface z-20 hidden flex-col pt-20 px-6 gap-4 md:hidden">
+        <button onclick="navigate('intro'); toggleMobileMenu()" class="text-lg font-medium border-b pb-2 text-left">1. Concept</button>
+        <button onclick="navigate('simulator'); toggleMobileMenu()" class="text-lg font-medium border-b pb-2 text-left">2. Simulator</button>
+        <button onclick="navigate('case'); toggleMobileMenu()" class="text-lg font-medium border-b pb-2 text-left">3. Case Study</button>
+        <button onclick="navigate('check'); toggleMobileMenu()" class="text-lg font-medium border-b pb-2 text-left">4. Validity Check</button>
+        <button onclick="navigate('detective'); toggleMobileMenu()" class="text-lg font-medium border-b pb-2 text-left text-highlight">5. The Detective</button>
+    </div>
+
+    <!-- MAIN CONTENT STAGE -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-10 pt-20 md:pt-10 scroll-smooth">
+        
+        <!-- VIEW 1: CONCEPT INTRO (Unchanged from previous, included for completeness) -->
+        <section id="view-intro" class="max-w-4xl mx-auto fade-in">
+            <header class="mb-10">
+                <div class="inline-block bg-accent/10 text-accent px-3 py-1 rounded-full text-xs font-bold uppercase mb-3">Design Logic</div>
+                <h2 class="text-4xl font-bold text-primary mb-4">The Logic of "Interruption"</h2>
+                <p class="text-lg text-secondary leading-relaxed">
+                    How do we know if a policy worked when we can't clone the city and create a control group? 
+                    <br>We use <strong>Time</strong>. We compare the unit to its <em>past self</em> and look for a "break" in the pattern.
+                </p>
+            </header>
+
+            <div class="bg-primary text-white p-8 rounded-2xl shadow-lg mb-8">
+                <h3 class="text-lg font-bold mb-4 text-highlight">The Core Equation</h3>
+                <div class="font-mono bg-black/30 p-4 rounded-lg overflow-x-auto text-sm md:text-base">
+                    Y<sub>t</sub> = &alpha; + &beta;<sub>1</sub>(time) + <span class="text-highlight">&beta;<sub>2</sub>(post)</span> + <span class="text-teal-300">&beta;<sub>3</sub>(time &times; post)</span> + &epsilon;
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <button onclick="navigate('simulator')" class="bg-accent hover:bg-teal-800 text-white px-8 py-3 rounded-lg font-semibold shadow-lg transition transform hover:-translate-y-1">
+                    Enter the Simulator &rarr;
+                </button>
+            </div>
+        </section>
+
+        <!-- VIEW 2: POLICY SIMULATOR (UPDATED: SCENARIOS) -->
+        <section id="view-simulator" class="hidden fade-in max-w-6xl mx-auto">
+            <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div>
+                    <h2 class="text-3xl font-bold text-primary">Policy Impact Simulator</h2>
+                    <p class="text-secondary text-sm">Select a scenario to see how ITS applies to different policy domains.</p>
+                </div>
+                <!-- Scenario Selector -->
+                <div class="mt-4 md:mt-0">
+                    <select id="scenario-select" onchange="switchScenario()" class="bg-white border border-secondary/30 text-primary text-sm rounded-lg focus:ring-accent focus:border-accent block w-full p-2.5 shadow-sm">
+                        <option value="traffic">Scenario: Speed Limit Reduction</option>
+                        <option value="opioid">Scenario: Naloxone Access Law</option>
+                        <option value="job">Scenario: Job Training Program</option>
+                    </select>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Controls -->
+                <div class="lg:col-span-1 bg-surface p-6 rounded-xl shadow-sm border border-secondary/10 h-fit">
+                    <div id="scenario-desc" class="mb-6 p-3 bg-soft rounded text-xs text-secondary italic">
+                        A city lowers speed limits from 40mph to 30mph in Month 50.
+                    </div>
+
+                    <h3 class="font-bold text-lg mb-6 border-b pb-2">Model Parameters</h3>
+                    
+                    <!-- Slider 1 -->
+                    <div class="mb-8">
+                        <label class="flex justify-between text-sm font-semibold mb-2">
+                            <span>&beta;<sub>1</sub>: Pre-Trend</span>
+                            <span id="val-b1" class="text-accent">0.5</span>
+                        </label>
+                        <input type="range" id="input-b1" min="-2" max="2" step="0.1" value="0.5" oninput="updateSimChart()">
+                    </div>
+
+                    <!-- Slider 2 -->
+                    <div class="mb-8">
+                        <label class="flex justify-between text-sm font-semibold mb-2">
+                            <span class="text-highlight">&beta;<sub>2</sub>: Immediate Impact</span>
+                            <span id="val-b2" class="text-highlight">-15</span>
+                        </label>
+                        <input type="range" id="input-b2" min="-30" max="30" step="1" value="-15" oninput="updateSimChart()">
+                    </div>
+
+                    <!-- Slider 3 -->
+                    <div class="mb-6">
+                        <label class="flex justify-between text-sm font-semibold mb-2">
+                            <span class="text-teal-600">&beta;<sub>3</sub>: Slope Change</span>
+                            <span id="val-b3" class="text-teal-600">-0.2</span>
+                        </label>
+                        <input type="range" id="input-b3" min="-2" max="2" step="0.1" value="-0.2" oninput="updateSimChart()">
+                    </div>
+
+                    <button onclick="resetSim()" class="w-full py-2 border border-secondary/30 rounded text-sm text-secondary hover:bg-soft transition">Reset to Scenario Default</button>
+                </div>
+
+                <!-- Chart Area -->
+                <div class="lg:col-span-2 bg-surface p-4 rounded-xl shadow-md border border-secondary/10">
+                    <div class="chart-container">
+                        <canvas id="simChart"></canvas>
+                    </div>
+                    <div class="mt-4 flex justify-center gap-6 text-xs">
+                        <div class="flex items-center"><span class="w-3 h-3 bg-slate-800 rounded-full mr-2"></span> Actual Outcome</div>
+                        <div class="flex items-center"><span class="w-6 h-0.5 bg-slate-400 border-dashed border-t-2 mr-2"></span> Counterfactual (No Policy)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: CASE STUDY (Unchanged) -->
+        <section id="view-case" class="hidden fade-in max-w-5xl mx-auto">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-primary mb-2">Case Study: Naloxone Access Law</h2>
+                <p class="text-secondary">Analyzing real coefficients from the lecture.</p>
+            </header>
+            <div class="bg-surface p-6 rounded-xl shadow-md border border-secondary/10 mb-8">
+                <div class="chart-container">
+                    <canvas id="caseChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: VALIDITY CHECKLIST (Unchanged) -->
+        <section id="view-check" class="hidden fade-in max-w-3xl mx-auto">
+            <header class="mb-8 text-center">
+                <h2 class="text-3xl font-bold text-primary mb-2">Is Your ITS Valid?</h2>
+                <p class="text-secondary">Check these assumptions before you publish.</p>
+            </header>
+            <div class="space-y-4">
+                <div class="bg-surface p-4 rounded-xl border-l-4 border-accent shadow-sm">
+                    <h3 class="font-bold">1. Clear Intervention Date</h3>
+                    <p class="text-sm text-secondary">We must know exactly when the policy started.</p>
+                </div>
+                <div class="bg-surface p-4 rounded-xl border-l-4 border-accent shadow-sm">
+                    <h3 class="font-bold">2. Stable Pre-Trend</h3>
+                    <p class="text-sm text-secondary">The "Before" period needs to be predictable.</p>
+                </div>
+                <div class="bg-surface p-4 rounded-xl border-l-4 border-accent shadow-sm">
+                    <h3 class="font-bold">3. No Co-Occurring Events</h3>
+                    <p class="text-sm text-secondary">Did something else happen at the same time?</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 5: THE DETECTIVE (NEW!) -->
+        <section id="view-detective" class="hidden fade-in max-w-6xl mx-auto">
+            <header class="mb-8 flex items-center gap-4">
+                <div class="bg-primary text-white p-3 rounded-lg text-2xl">🕵️‍♀️</div>
+                <div>
+                    <h2 class="text-3xl font-bold text-primary">Threats to Validity: The Detective Game</h2>
+                    <p class="text-secondary text-sm">A new "Sugary Drink Tax" looks wildly successful. Or is it? Investigate the data.</p>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- The Case File (Left) -->
+                <div class="lg:col-span-1 space-y-4">
+                    <div class="bg-surface p-6 rounded-xl shadow-sm border border-secondary/10">
+                        <h3 class="font-bold text-lg mb-4">Investigation Tools</h3>
+                        <p class="text-xs text-secondary mb-4">Click to reveal hidden data layers.</p>
+                        
+                        <button onclick="toggleClue('history')" id="btn-history" class="w-full text-left p-3 mb-2 rounded bg-soft hover:bg-slate-200 transition flex justify-between items-center">
+                            <span>📅 Check History</span>
+                            <span class="text-xs bg-white px-2 py-1 rounded border">Reveal</span>
+                        </button>
+                        <div id="clue-history" class="hidden text-xs text-danger bg-red-50 p-3 rounded mb-4 border border-red-100">
+                            <strong>THREAT FOUND: History</strong><br>
+                            A major economic recession began exactly when the tax started. People bought less soda because they were broke, not because of the tax.
+                        </div>
+
+                        <button onclick="toggleClue('instrument')" id="btn-instrument" class="w-full text-left p-3 mb-2 rounded bg-soft hover:bg-slate-200 transition flex justify-between items-center">
+                            <span>📏 Check Measurement</span>
+                            <span class="text-xs bg-white px-2 py-1 rounded border">Reveal</span>
+                        </button>
+                        <div id="clue-instrument" class="hidden text-xs text-danger bg-red-50 p-3 rounded mb-4 border border-red-100">
+                            <strong>THREAT FOUND: Instrumentation</strong><br>
+                            In 2020, the store switched from counting "Ounces Sold" to "Units Sold". The scale of the Y-axis changed artificially.
+                        </div>
+
+                        <button onclick="toggleClue('maturation')" id="btn-maturation" class="w-full text-left p-3 mb-2 rounded bg-soft hover:bg-slate-200 transition flex justify-between items-center">
+                            <span>📉 Check Long-Term Trend</span>
+                            <span class="text-xs bg-white px-2 py-1 rounded border">Reveal</span>
+                        </button>
+                        <div id="clue-maturation" class="hidden text-xs text-danger bg-red-50 p-3 rounded mb-4 border border-red-100">
+                            <strong>THREAT FOUND: Maturation</strong><br>
+                            Zooming out 10 years shows soda sales were already dropping 5% annually. The tax just continued an existing trend.
+                        </div>
+                    </div>
+
+                    <div class="bg-primary text-white p-6 rounded-xl shadow-md text-center">
+                        <h3 class="font-bold mb-2">Verdict?</h3>
+                        <div class="flex gap-2 justify-center">
+                            <button onclick="alert('Correct! The threats to validity are too high.')" class="bg-danger hover:bg-red-600 px-4 py-2 rounded text-sm font-bold">Invalid</button>
+                            <button onclick="alert('Incorrect. Look at the History threat again.')" class="bg-accent hover:bg-teal-600 px-4 py-2 rounded text-sm font-bold">Valid</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- The Evidence Board (Right) -->
+                <div class="lg:col-span-2 bg-surface p-4 rounded-xl shadow-md border border-secondary/10 flex flex-col justify-center">
+                    <div class="chart-container">
+                        <canvas id="detectiveChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-secondary mt-2">The shaded area represents the "Tax Active" period.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- Navigation Logic ---
+        function navigate(viewId) {
+            document.querySelectorAll('main section').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById('view-' + viewId);
+            target.classList.remove('hidden');
+            target.classList.remove('fade-in');
+            void target.offsetWidth; 
+            target.classList.add('fade-in');
+
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const activeNav = document.getElementById('nav-' + viewId);
+            if(activeNav) activeNav.classList.add('active');
+
+            // Lazy load charts
+            if(viewId === 'simulator' && !simChart) initSimChart();
+            if(viewId === 'case' && !caseChart) initCaseChart();
+            if(viewId === 'detective' && !detectiveChart) initDetectiveChart();
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        }
+
+        // --- SIMULATOR LOGIC (Enhanced) ---
+        let simChart = null;
+        const months = Array.from({length: 100}, (_, i) => i + 1);
+        const cutoff = 50;
+
+        // Scenario Data Definitions
+        const scenarios = {
+            traffic: {
+                name: "Speed Limit Reduction",
+                yLabel: "Monthly Accidents",
+                desc: "A city lowers speed limits from 40mph to 30mph in Month 50.",
+                defaults: { b1: 0.5, b2: -15, b3: -0.2 }
+            },
+            opioid: {
+                name: "Naloxone Access Law",
+                yLabel: "Monthly Overdose Deaths",
+                desc: "State allows pharmacists to prescribe Naloxone starting Month 50.",
+                defaults: { b1: 0.8, b2: -10, b3: -0.5 }
+            },
+            job: {
+                name: "Job Training Program",
+                yLabel: "Employment Rate (%)",
+                desc: "A new job training initiative is launched. Note: Positive Impact expected!",
+                defaults: { b1: -0.1, b2: 5, b3: 0.4 }
+            }
+        };
+
+        function calculateData(b1, b2, b3) {
+            const alpha = 50; 
+            const data = [];
+            const counterfactual = [];
+            months.forEach(t => {
+                if (t <= cutoff) {
+                    const val = alpha + (b1 * t);
+                    data.push(val);
+                    counterfactual.push(val);
+                } else {
+                    const timeSinceCutoff = t - cutoff;
+                    const val = alpha + (b1 * t) + b2 + (b3 * timeSinceCutoff);
+                    data.push(val);
+                    counterfactual.push(alpha + (b1 * t));
+                }
+            });
+            return { data, counterfactual };
+        }
+
+        function initSimChart() {
+            const ctx = document.getElementById('simChart').getContext('2d');
+            // Init with Traffic defaults
+            const s = scenarios.traffic;
+            const { data, counterfactual } = calculateData(s.defaults.b1, s.defaults.b2, s.defaults.b3);
+
+            simChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        { label: 'Actual Outcome', data: data, borderColor: '#1e293b', backgroundColor: '#1e293b', borderWidth: 2, pointRadius: 0, tension: 0.1 },
+                        { label: 'Counterfactual', data: counterfactual, borderColor: '#94a3b8', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, tension: 0.1 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        annotation: { annotations: { line1: { type: 'line', xMin: 49, xMax: 49, borderColor: '#f59e0b', borderWidth: 2, label: { content: 'Intervention', display: true, backgroundColor: '#f59e0b' }}}}
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Time (Months)' } },
+                        y: { title: { display: true, text: s.yLabel } }
+                    }
+                }
+            });
+            // Set inputs to match default
+            updateSliderUI(s.defaults);
+        }
+
+        function switchScenario() {
+            const val = document.getElementById('scenario-select').value;
+            const s = scenarios[val];
+            
+            // Update Text
+            document.getElementById('scenario-desc').innerText = s.desc;
+            simChart.options.scales.y.title.text = s.yLabel;
+            
+            // Reset Values
+            updateSliderUI(s.defaults);
+            updateSimChart();
+        }
+
+        function updateSliderUI(vals) {
+            document.getElementById('input-b1').value = vals.b1;
+            document.getElementById('input-b2').value = vals.b2;
+            document.getElementById('input-b3').value = vals.b3;
+            document.getElementById('val-b1').innerText = vals.b1;
+            document.getElementById('val-b2').innerText = vals.b2;
+            document.getElementById('val-b3').innerText = vals.b3;
+        }
+
+        function updateSimChart() {
+            const b1 = parseFloat(document.getElementById('input-b1').value);
+            const b2 = parseFloat(document.getElementById('input-b2').value);
+            const b3 = parseFloat(document.getElementById('input-b3').value);
+
+            document.getElementById('val-b1').innerText = b1;
+            document.getElementById('val-b2').innerText = b2;
+            document.getElementById('val-b3').innerText = b3;
+
+            const { data, counterfactual } = calculateData(b1, b2, b3);
+            simChart.data.datasets[0].data = data;
+            simChart.data.datasets[1].data = counterfactual;
+            simChart.update();
+        }
+
+        function resetSim() {
+            const val = document.getElementById('scenario-select').value;
+            updateSliderUI(scenarios[val].defaults);
+            updateSimChart();
+        }
+
+        // --- CASE STUDY (Unchanged) ---
+        let caseChart = null;
+        function initCaseChart() {
+            const ctx = document.getElementById('caseChart').getContext('2d');
+            const time = Array.from({length: 100}, (_, i) => i + 1);
+            const caseData = time.map(t => {
+                let y = 75 + (0.8 * t);
+                if(t > 60) y += -9.48 + (-0.33 * (t - 60));
+                return y + (Math.random() * 5 - 2.5);
+            });
+            const trendLine = time.map(t => {
+                let y = 75 + (0.8 * t);
+                if(t > 60) y += -9.48 + (-0.33 * (t - 60));
+                return y;
+            });
+
+            caseChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    labels: time,
+                    datasets: [
+                        { type: 'scatter', label: 'Monthly Deaths', data: caseData, backgroundColor: '#cbd5e1', pointRadius: 3 },
+                        { type: 'line', label: 'Fitted ITS Model', data: trendLine, borderColor: '#0f766e', borderWidth: 3, pointRadius: 0, tension: 0 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { annotation: { annotations: { line1: { type: 'line', xMin: 59, xMax: 59, borderColor: '#f59e0b', borderWidth: 2 }}}}
+                }
+            });
+        }
+
+        // --- DETECTIVE LOGIC ---
+        let detectiveChart = null;
+        function initDetectiveChart() {
+            const ctx = document.getElementById('detectiveChart').getContext('2d');
+            const t = Array.from({length: 50}, (_, i) => i + 1);
+            
+            // The "Suspicious" Data: Dropping sales after T=25
+            const salesData = t.map(x => {
+                if(x < 25) return 100 + (Math.random() * 5);
+                return 80 + (Math.random() * 5); // Big drop! Looks effective!
+            });
+
+            // The "Hidden" Economy Data (Recession)
+            const economyData = t.map(x => {
+                if(x < 25) return 100;
+                return 100 - (x - 25) * 2; // Economy crashing
+            });
+
+            detectiveChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: t,
+                    datasets: [
+                        { 
+                            label: 'Soda Sales ($)', 
+                            data: salesData, 
+                            borderColor: '#0f766e', 
+                            backgroundColor: '#0f766e',
+                            borderWidth: 3,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Economy Index (Hidden)',
+                            data: economyData,
+                            borderColor: '#ef4444',
+                            borderWidth: 2,
+                            borderDash: [5,5],
+                            hidden: true // Hidden initially
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        annotation: {
+                            annotations: {
+                                box1: {
+                                    type: 'box',
+                                    xMin: 24, xMax: 50,
+                                    backgroundColor: 'rgba(245, 158, 11, 0.1)'
+                                },
+                                line1: {
+                                    type: 'line',
+                                    xMin: 24, xMax: 24,
+                                    borderColor: '#f59e0b',
+                                    borderWidth: 2,
+                                    label: { content: 'Tax Started', display: true, backgroundColor: '#f59e0b' }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function toggleClue(clueId) {
+            // Show text clue
+            const el = document.getElementById('clue-' + clueId);
+            el.classList.remove('hidden');
+            el.classList.add('fade-in');
+
+            // If History is clicked, show the hidden chart line
+            if(clueId === 'history' && detectiveChart) {
+                detectiveChart.data.datasets[1].hidden = false;
+                detectiveChart.update();
+            }
+        }
+
+    </script>
+</body>
+</html>

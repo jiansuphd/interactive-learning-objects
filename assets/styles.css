@@ -1,0 +1,142 @@
+/* Base Spooky Styles */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #1a1a1a;
+    color: #e5e5e5;
+    padding: 30px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* User Story 1: h1 element with id="title" */
+h1#title {
+    font-family: 'Creepster', cursive;
+    color: #ff4500;
+    font-size: 3.5rem;
+    text-align: center;
+    text-shadow: 4px 4px 0px #000, 
+                 6px 6px 0px rgba(255, 69, 0, 0.4);
+    margin-bottom: 20px;
+}
+
+/* Table Styling */
+table {
+    width: 90%;
+    max-width: 1000px;
+    border-collapse: collapse;
+    margin-top: 20px;
+    box-shadow: 0 0 20px rgba(255, 69, 0, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+}
+th, td {
+    padding: 12px 15px;
+    border: 1px solid #333;
+    text-align: left;
+    transition: background-color 0.3s;
+}
+thead {
+    background-color: #4a4a4a;
+    color: #fff;
+    font-family: 'Roboto Slab', serif;
+    font-size: 1rem;
+}
+tbody tr:nth-child(even) {
+    background-color: #2a2a2a;
+}
+tbody tr:hover {
+    background-color: #383838;
+}
+
+/* -------------------------------------- */
+/* --- CORE REQUIREMENTS --- */
+/* -------------------------------------- */
+
+/* User Story 25: Set display property of each span element */
+span {
+    display: inline-block;
+}
+
+/* User Story 7, 19, 21, 23: Row Background Gradients (Attribute Selectors) */
+
+tr[class="read"] {
+    background-image: linear-gradient(to right, #2a2a2a 50%, #203520); /* Dark Green Read */
+}
+tr[class="to-read"] {
+    background-image: linear-gradient(to right, #2a2a2a 50%, #202035); /* Dark Blue To Read */
+}
+tr[class="in-progress"] {
+    background-image: linear-gradient(to right, #2a2a2a 50%, #352020); /* Dark Red In Progress */
+}
+
+/* ----------------------------------------------------- */
+/* --- STATUS AND RATE CONTAINER STYLING --- */
+/* ----------------------------------------------------- */
+
+/* User Story 35, 36, 37, 38: Target Status and Rate containers for Height, Width, Padding */
+span[class="status"],
+span[class^="rate"] { 
+    height: 25px;
+    width: 80px;
+    padding: 2px 6px; 
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    line-height: 20px;
+}
+
+/* ----------------------------------------------------- */
+/* --- STATUS COLORS (Attribute Selectors) --- */
+/* ----------------------------------------------------- */
+
+/* User Story 26, 27, 28: Target TO-READ Status */
+tr[class="to-read"] span[class="status"] { 
+    border: 1px solid #7dd3fc; 
+    background-image: linear-gradient(to bottom, #0ea5e9, #06b6d4); 
+    color: #0c4a6e;
+}
+
+/* User Story 29, 30, 31: Target READ Status */
+tr[class="read"] span[class="status"] { 
+    border: 1px solid #4ade80; 
+    background-image: linear-gradient(to bottom, #16a34a, #22c55e); 
+    color: #064e3b;
+}
+
+/* User Story 32, 33, 34: Target IN-PROGRESS Status */
+tr[class="in-progress"] span[class="status"] { 
+    border: 1px solid #fca5a5; 
+    background-image: linear-gradient(to bottom, #dc2626, #f97316); 
+    color: #7f1d1d;
+}
+
+/* ----------------------------------------------------- */
+/* --- RATE INNER SPAN STYLING --- */
+/* ----------------------------------------------------- */
+
+/* User Story 39-45: Style for the inner rating spans (the "dots") */
+span[class^="rate"] > span { 
+    border: 1px solid #525252;
+    border-radius: 50%;
+    margin: 0 2px;
+    height: 14px;
+    width: 14px;
+    background-color: transparent; 
+}
+
+/* --- User Story 46, 47: Rating 1 --- */
+span[class*="one"] > span:nth-child(1) { /* Targets first descendant */
+    background-image: linear-gradient(to top, #ffcb00, #ff8c00); 
+}
+
+/* --- User Story 48, 49: Rating 2 --- */
+span[class*="two"] > span:nth-child(-n+2) { /* Targets first two descendants */
+    background-image: linear-gradient(to top, #ffcb00, #ff8c00); 
+}
+
+/* --- User Story 50, 51: Rating 3 --- */
+span[class*="three"] > span { /* Targets all descendants */
+    background-image: linear-gradient(to top, #ffcb00, #ff8c00); 
+}
