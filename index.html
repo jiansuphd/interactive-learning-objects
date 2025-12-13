@@ -24,20 +24,22 @@
             color: #1a56c0;
             border-bottom: 3px solid #f59e0b;
             padding-bottom: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 30px; /* Increased margin for better separation */
         }
         h3 {
             font-family: 'Roboto Slab', serif;
             color: #3b82f6;
-            margin-top: 25px;
-            margin-bottom: 15px;
+            /* FIX: Significantly increased vertical margin for more space */
+            margin-top: 50px; 
+            margin-bottom: 30px; 
             padding-left: 10px;
             border-left: 4px solid #f59e0b;
         }
         .card {
             background-color: white;
             border-radius: 8px;
-            padding: 20px;
+            /* FIX: Increased padding for more spacious card content */
+            padding: 25px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             transition: transform 0.2s, box-shadow 0.2s;
             display: flex;
@@ -66,7 +68,9 @@
         .card p {
             font-size: 0.9rem;
             color: #6b7280;
-            margin-top: 5px;
+            /* FIX: Adjusted margin to ensure space between title and description */
+            margin-top: 6px; 
+            margin-bottom: 0; 
         }
     </style>
 </head>
@@ -76,8 +80,8 @@
     <h1 class="text-3xl">Interactive Learning Object (ILO) Gallery</h1>
     <p class="text-lg text-gray-600">Browse and launch components used in course development, organized by category.</p>
 
-    <!-- 1. COURSE ARCHIVES (MOVED UP) -->
-    <h3 class="text-xl">1. Course Archives (Specific Course Content)</h3>
+    <!-- 1. COURSE ARCHIVES (MOVED UP) - Removed Numbering -->
+    <h3 class="text-xl">Course Archives (Specific Course Content)</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         
         <div class="card">
@@ -117,8 +121,8 @@
         </div>
     </div>
 
-    <!-- 2. GENERIC REUSABLE TEMPLATES (MOVED TO MIDDLE) -->
-    <h3 class="text-xl">2. Generic Components (Reusable Templates)</h3>
+    <!-- 2. GENERIC REUSABLE TEMPLATES (MOVED TO MIDDLE) - Removed Numbering -->
+    <h3 class="text-xl">Generic Components (Reusable Templates)</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
         <div class="card">
@@ -152,8 +156,8 @@
 
     </div>
 
-    <!-- 3. VISUAL EFFECTS & UTILITIES (MOVED TO BOTTOM) -->
-    <h3 class="text-xl">3. Visual Effects & Utilities</h3>
+    <!-- 3. VISUAL EFFECTS & UTILITIES (MOVED TO BOTTOM) - Removed Numbering -->
+    <h3 class="text-xl">Visual Effects & Utilities</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         
         <div class="card">
